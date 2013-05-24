@@ -231,30 +231,33 @@ function search_is_active() {
  *   have been set to active on the search settings page will be returned.
  *
  * @return
- *   Array of hook_search_info() return values, keyed by module name. The
+ *   Array of plugin.manager.search.page definitions, keyed by module name. The
  *   'title' and 'path' array elements will be set to defaults for each module
  *   if not supplied by hook_search_info(), and an additional array element of
  *   'module' will be added (set to the module name).
  */
 function search_get_info($all = FALSE) {
-  $search_hooks = &drupal_static(__FUNCTION__);
+  $search_info = &drupal_static(__FUNCTION__);
 
-  if (!isset($search_hooks)) {
-    foreach (module_implements('search_info') as $module) {
-      $search_hooks[$module] = call_user_func($module . '_search_info');
+  if (!isset($search_plugins)) {
+    $search_info = array();
+    $search_definitions = Drupal::service('plugin.manager.search.page')->getDefinitions();
+    foreach ($search_definitions as $plugin_id => $plugin) {
+      $module = $plugin['module'];
+      $search_info[$module] = $module;
       // Use module name as the default value.
-      $search_hooks[$module] += array('title' => $module, 'path' => $module);
+      $search_info[$module] += array('title' => $module, 'path' => $module);
       // Include the module name itself in the array.
-      $search_hooks[$module]['module'] = $module;
+      $search_info[$module]['module'] = $module;
     }
   }
 
   if ($all) {
-    return $search_hooks;
+    return $search_info;
   }
 
   // Return only modules that are set to active in search settings.
-  return array_intersect_key($search_hooks, array_flip(config('search.settings')->get('active_modules')));
+  return array_intersect_key($search_info, array_flip(config('search.settings')->get('active_modules')));
 }
 
 /**
@@ -264,14 +267,14 @@ function search_get_info($all = FALSE) {
  *   The search_get_info() array element for the default search module, if any.
  */
 function search_get_default_module_info() {
-  $search_definitions = Drupal::service('plugin.manager.search.page')->getDefinitions();
+  $info = search_get_info();
   $default = config('search.settings')->get('default_module');
-  if (isset($search_definitions[$default])) {
-    return $search_definitions[$default];
+  if (isset($info[$default])) {
+    return $info[$default];
   }
   // The variable setting does not match any active module, so just return
   // the info for the first active module (if any).
-  return reset($search_definitions);
+  return reset($info);
 }
 
 /**
@@ -963,7 +966,7 @@ function search_form($form, &$form_state, $action = '', $keys = '', $module = NU
     $module_info = search_get_default_module_info();
   }
   else {
-    $info = Drupal::service('plugin.manager.search')->getDefinitions();
+    $info = search_get_info();
     $module_info = isset($info[$module]) ? $info[$module] : FALSE;
   }
 
