@@ -18,15 +18,19 @@ use Drupal\Core\Plugin\Discovery\CacheDecorator;
 class SearchPagePluginManager extends PluginManagerBase {
 
   /**
-   * Constructs a ArchiverManager object.
+   * Overrides \Drupal\Component\Plugin\PluginManagerBase::__construct().
    *
-   * @param array $namespaces
-   *   An array of paths keyed by its corresponding namespaces.
+   * @param \Traversable $namespaces
+   *   An object that implements \Traversable which contains the root paths
+   *   keyed by the corresponding namespace to look for plugin implementations,
    */
-  public function __construct(array $namespaces) {
-    $this->discovery = new AnnotatedClassDiscovery('Search', $namespaces);
+  public function __construct(\Traversable $namespaces) {
+    $annotation_namespaces = array('Drupal\search\Annotation' => $namespaces['Drupal\search']);
+    $this->discovery = new AnnotatedClassDiscovery('search', $namespaces, $annotation_namespaces, 'Drupal\search');
     $this->discovery = new AlterDecorator($this->discovery, 'search_info');
-    $this->discovery = new CacheDecorator($this->discovery, 'search_info');
+    $this->discovery = new CacheDecorator($this->discovery, 'search');
+
+    $this->factory = new DefaultFactory($this->discovery);
   }
 
   /**
