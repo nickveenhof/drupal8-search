@@ -10,9 +10,9 @@ namespace Drupal\search;
 /**
  * Defines a common interface for all SearchExecute objects.
  */
-interface SearchExecuteInterface {  
-  public function getConditions();
-  public function setConditions();
+interface SearchExecuteInterface {
+  public function __construct($keywords, array $query_parameters, array $request_attributes);
+  public function isSearchExecutable();
   public function execute();
 
 }
