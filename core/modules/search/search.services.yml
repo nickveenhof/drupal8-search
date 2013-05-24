@@ -1,4 +1,4 @@
 services:
   plugin.manager.search.page:
-    class: Drupal\Core\Search\SearchPageManager
+    class: Drupal\search\SearchPageManager
     arguments: ['%container.namespaces%']

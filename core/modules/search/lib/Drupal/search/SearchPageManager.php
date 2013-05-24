@@ -1,10 +1,10 @@
 <?php
 
 /**
- * Contains \Drupal\Search\SearchPageManager.
+ * Contains \Drupal\search\SearchPageManager.
  */
 
-namespace Drupal\Search\SearchPageManager;
+namespace Drupal\search\SearchPageManager;
 
 use Drupal\Component\Plugin\Factory\DefaultFactory;
 use Drupal\Component\Plugin\PluginManagerBase;
