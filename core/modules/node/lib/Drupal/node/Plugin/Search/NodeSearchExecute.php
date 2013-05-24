@@ -10,8 +10,8 @@ use Drupal\Component\Annotation\Plugin;
  *
  * @Plugin(
  *   id = "node_search_execute",
- *   title => "Content",
- *   path => "node",
+ *   title = "Content",
+ *   path = "node",
  *   module = "node"
  * )
  */

@@ -244,9 +244,8 @@ function search_get_info($all = FALSE) {
     $search_definitions = Drupal::service('plugin.manager.search.page')->getDefinitions();
     foreach ($search_definitions as $plugin_id => $plugin) {
       $module = $plugin['module'];
-      $search_info[$module] = $module;
       // Use module name as the default value.
-      $search_info[$module] += array('title' => $module, 'path' => $module);
+      $search_info[$module] = array('title' => $module, 'path' => $module);
       // Include the module name itself in the array.
       $search_info[$module]['module'] = $module;
     }

@@ -10,8 +10,8 @@ use Drupal\Component\Annotation\Plugin;
  *
  * @Plugin(
  *   id = "user_search_execute",
- *   title => "Users",
- *   path => "user",
+ *   title = "Users",
+ *   path = "user",
  *   module = "user"
  * )
  */
