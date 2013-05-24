@@ -3,12 +3,12 @@
 namespace Drupal\node\Plugin\Search;
 
 use Drupal\search\SearchExecuteInterface;
-use Drupal\Component\Annotation\Plugin;
+use Drupal\search\Annotation\SearchPagePlugin;
 
 /**
  * Executes a keyword search aginst the search index.
  *
- * @Plugin(
+ * @SearchPagePlugin(
  *   id = "node_search_execute",
  *   title = "Content",
  *   path = "node",
