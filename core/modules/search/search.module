@@ -177,7 +177,6 @@ function search_menu() {
   // system appears to be having two sets of tabs. See discussion on issue
   // http://drupal.org/node/245103 for details.
 
-  drupal_static_reset('search_get_info');
   $default_info = search_get_default_module_info();
   if ($default_info) {
     $search_definitions = Drupal::service('plugin.manager.search.page')->getDefinitions();
