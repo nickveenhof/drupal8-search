@@ -13,7 +13,7 @@
  * @param $keys
  *   Keywords to use for the search.
  */
-function search_view($plugin_key = NULL, $keys = '') {
+function search_view($plugin_id = NULL, $keys = '') {
   $info = FALSE;
   $keys = trim($keys);
   // Also try to pull search keywords out of the $_REQUEST variable to
@@ -22,14 +22,7 @@ function search_view($plugin_key = NULL, $keys = '') {
     $keys = trim($_REQUEST['keys']);
   }
 
-  if (!empty($module)) {
-    $active_module_info = search_get_info();
-    if (isset($active_module_info[$module])) {
-      $info = $active_module_info[$module];
-    }
-  }
-
-  if (empty($info)) {
+  if (empty($plugin_id)) {
     // No path or invalid path: find the default module. Note that if there
     // are no enabled search modules, this function should never be called,
     // since hook_menu() would not have defined any search paths.

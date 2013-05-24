@@ -31,6 +31,7 @@ class UserSearchExecute implements SearchExecuteInterface {
     if (!$this->isSearchExecutable()) {
       return $results;
     }
+    $keys = $this->keywords;
     $find = array();
     // Replace wildcards with MySQL/PostgreSQL wildcards.
     $keys = preg_replace('!\*+!', '%', $keys);

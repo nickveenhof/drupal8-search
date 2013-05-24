@@ -151,6 +151,7 @@ function search_menu() {
   $items['search'] = array(
     'title' => 'Search',
     'page callback' => 'search_view',
+    'page arguments' => array(NULL, ''),
     'access callback' => 'search_is_active',
     'type' => MENU_SUGGESTED_ITEM,
     'file' => 'search.pages.inc',
@@ -190,7 +191,7 @@ function search_menu() {
         'access arguments' => array($search_info['module']),
         'type' => MENU_LOCAL_TASK,
         'file' => 'search.pages.inc',
-        'weight' => $module == $default_info['module'] ? -10 : 0,
+        'weight' => $search_info['module'] == $default_info['module'] ? -10 : 0,
       );
       $items["$path/%menu_tail"] = array(
         'title' => $search_info['title'],

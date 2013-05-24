@@ -31,6 +31,7 @@ class NodeSearchExecute implements SearchExecuteInterface {
     if (!$this->isSearchExecutable()) {
       return $results;
     }
+    $keys = $this->keywords;
     // Build matching conditions
     $query = db_select('search_index', 'i', array('target' => 'slave'))
       ->extend('Drupal\search\SearchQuery')
