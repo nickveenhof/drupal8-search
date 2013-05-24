@@ -1,10 +1,10 @@
 <?php
 
 /**
- * Contains \Drupal\search\SearchPageManager.
+ * Contains \Drupal\search\SearchPagePluginManager.
  */
 
-namespace Drupal\search\SearchPageManager;
+namespace Drupal\search;
 
 use Drupal\Component\Plugin\Factory\DefaultFactory;
 use Drupal\Component\Plugin\PluginManagerBase;
@@ -15,7 +15,7 @@ use Drupal\Core\Plugin\Discovery\CacheDecorator;
 /**
  * SearchPage plugin manager.
  */
-class SearchPageManager extends PluginManagerBase {
+class SearchPagePluginManager extends PluginManagerBase {
 
   /**
    * Constructs a ArchiverManager object.
