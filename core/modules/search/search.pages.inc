@@ -13,7 +13,7 @@
  * @param $keys
  *   Keywords to use for the search.
  */
-function search_view($module = NULL, $keys = '') {
+function search_view($plugin_key = NULL, $keys = '') {
   $info = FALSE;
   $keys = trim($keys);
   // Also try to pull search keywords out of the $_REQUEST variable to
@@ -41,7 +41,13 @@ function search_view($module = NULL, $keys = '') {
     }
     drupal_goto($path);
   }
-
+  $request = Drupal::request();
+  $config = array(
+    'keywords' => $keys,
+    'query_parameters' => $request->query->all(),
+    'request_attributes' => $request->attributes->all(),
+  );
+  $plugin = Drupal::service('plugin.manager.search.page')->createInstance($plugin_id, $config);
   // Default results output is an empty string.
   $results = array('#markup' => '');
   // Process the search form. Note that if there is $_POST data,
@@ -50,18 +56,13 @@ function search_view($module = NULL, $keys = '') {
   // form submits with POST but redirects to GET. This way we can keep
   // the search query URL clean as a whistle.
   if (empty($_POST['form_id']) || $_POST['form_id'] != 'search_form') {
-    $conditions =  NULL;
-    if (isset($info['conditions_callback'])) {
-      // Build an optional array of more search conditions.
-      $conditions = call_user_func($info['conditions_callback'], $keys);
-    }
     // Only search if there are keywords or non-empty conditions.
-    if ($keys || !empty($conditions)) {
+    if ($plugin->isSearchExecutable()) {
       // Log the search keys.
       watchdog('search', 'Searched %type for %keys.', array('%keys' => $keys, '%type' => $info['title']), WATCHDOG_NOTICE, l(t('results'), 'search/' . $info['path'] . '/' . $keys));
 
       // Collect the search results.
-      $results = search_data($keys, $info['module'], $conditions);
+      $results = search_data($plugin, $info['module']);
     }
   }
   // The form may be altered based on whether the search was run.

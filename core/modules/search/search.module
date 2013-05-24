@@ -1074,9 +1074,8 @@ function search_box_form_submit($form, &$form_state) {
  *   Renderable array of search results. No return value if $keys are not
  *   supplied or if the given search module is not active.
  */
-function search_data($keys, $module, $conditions = NULL) {
-  if (module_hook($module, 'search_execute')) {
-    $results = module_invoke($module, 'search_execute', $keys, $conditions);
+function search_data(SearchExecuteInterface $plugin, $module) {
+    $results = $plugin->execute();
     if (module_hook($module, 'search_page')) {
       return module_invoke($module, 'search_page', $results);
     }
@@ -1087,7 +1086,6 @@ function search_data($keys, $module, $conditions = NULL) {
         '#module' => $module,
       );
     }
-  }
 }
 
 /**
