@@ -74,7 +74,7 @@ class NodeSearchExecute implements SearchExecuteInterface {
       $node->rendered .= ' ' . module_invoke('comment', 'node_update_index', $node, $item->langcode);
 
       $extra = module_invoke_all('node_search_result', $node, $item->langcode);
- 
+
       $language = language_load($item->langcode);
       $uri = $node->uri();
       $results[] = array(
