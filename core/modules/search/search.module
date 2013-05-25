@@ -151,7 +151,7 @@ function search_menu() {
   $items['search'] = array(
     'title' => 'Search',
     'page callback' => 'search_view',
-    'page arguments' => array(NULL, ''),
+    'page arguments' => array('', ''),
     'access callback' => 'search_is_active',
     'type' => MENU_SUGGESTED_ITEM,
     'file' => 'search.pages.inc',
@@ -180,13 +180,12 @@ function search_menu() {
 
   $default_info = search_get_default_module_info();
   if ($default_info) {
-    $search_definitions = Drupal::service('plugin.manager.search.page')->getDefinitions();
-    foreach ($search_definitions as $plugin_id => $search_info) {
+    foreach (search_get_info() as $module => $search_info) {
       $path = 'search/' . $search_info['path'];
       $items[$path] = array(
         'title' => $search_info['title'],
         'page callback' => 'search_view',
-        'page arguments' => array($plugin_id, ''),
+        'page arguments' => array($search_info['id'], $search_info['module'], ''),
         'access callback' => '_search_menu_access',
         'access arguments' => array($search_info['module']),
         'type' => MENU_LOCAL_TASK,
@@ -197,7 +196,7 @@ function search_menu() {
         'title' => $search_info['title'],
         'load arguments' => array('%map', '%index'),
         'page callback' => 'search_view',
-        'page arguments' => array($plugin_id, 2),
+        'page arguments' => array($search_info['id'], $search_info['module'], 2),
         'access callback' => '_search_menu_access',
         'access arguments' => array($search_info['module']),
         // The default local task points to its parent, but this item points to
@@ -245,10 +244,9 @@ function search_get_info($all = FALSE) {
     $search_definitions = Drupal::service('plugin.manager.search.page')->getDefinitions();
     foreach ($search_definitions as $plugin_id => $plugin) {
       $module = $plugin['module'];
+      $search_info[$module] = $plugin;
       // Use module name as the default value.
-      $search_info[$module] = array('title' => $module, 'path' => $module);
-      // Include the module name itself in the array.
-      $search_info[$module]['module'] = $module;
+      $search_info[$module] += array('title' => $module, 'path' => $module, 'module' => $module);
     }
   }
 

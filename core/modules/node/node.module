@@ -2156,6 +2156,7 @@ function _node_index_node(EntityInterface $node) {
  * @see node_search_validate()
  */
 function node_form_search_form_alter(&$form, $form_state) {
+
   if (isset($form['module']) && $form['module']['#value'] == 'node' && user_access('use advanced search')) {
     // Keyword boxes:
     $form['advanced'] = array(

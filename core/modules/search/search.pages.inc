@@ -13,7 +13,7 @@
  * @param $keys
  *   Keywords to use for the search.
  */
-function search_view($plugin_id = NULL, $keys = '') {
+function search_view($plugin_id = NULL, $module = NULL, $keys = '') {
   $info = FALSE;
   $keys = trim($keys);
   // Also try to pull search keywords out of the $_REQUEST variable to
