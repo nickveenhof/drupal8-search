@@ -22,7 +22,14 @@ function search_view($plugin_id = NULL, $module = NULL, $keys = '') {
     $keys = trim($_REQUEST['keys']);
   }
 
-  if (empty($plugin_id)) {
+  if (!empty($module)) {
+    $active_module_info = search_get_info();
+    if (isset($active_module_info[$module])) {
+      $info = $active_module_info[$module];
+    }
+  }
+
+  if (empty($info)) {
     // No path or invalid path: find the default module. Note that if there
     // are no enabled search modules, this function should never be called,
     // since hook_menu() would not have defined any search paths.
