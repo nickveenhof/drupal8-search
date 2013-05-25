@@ -41,7 +41,7 @@ class NodeSearchExecute implements SearchExecuteInterface {
       ->condition('n.status', 1)
       ->addTag('node_access')
       ->searchExpression($keys, 'node');
-  
+
     // Insert special keywords.
     $query->setOption('type', 'n.type');
     $query->setOption('langcode', 'n.langcode');
@@ -52,10 +52,10 @@ class NodeSearchExecute implements SearchExecuteInterface {
     if (!$query->executeFirstPass()) {
       return array();
     }
-  
+
     // Add the ranking expressions.
     _node_rankings($query);
-  
+
     // Load results.
     $find = $query
       // Add the language code of the indexed item to the result of the query,
@@ -69,12 +69,12 @@ class NodeSearchExecute implements SearchExecuteInterface {
       $build = node_view($node, 'search_result', $item->langcode);
       unset($build['#theme']);
       $node->rendered = drupal_render($build);
-  
+
       // Fetch comments for snippet.
       $node->rendered .= ' ' . module_invoke('comment', 'node_update_index', $node, $item->langcode);
-  
+
       $extra = module_invoke_all('node_search_result', $node, $item->langcode);
-  
+ 
       $language = language_load($item->langcode);
       $uri = $node->uri();
       $results[] = array(

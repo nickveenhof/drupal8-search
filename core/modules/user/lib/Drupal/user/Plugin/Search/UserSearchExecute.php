@@ -57,7 +57,7 @@ class UserSearchExecute implements SearchExecuteInterface {
       ->execute()
       ->fetchCol();
     $accounts = user_load_multiple($uids);
-  
+
     foreach ($accounts as $account) {
       $result = array(
         'title' => user_format_name($account),

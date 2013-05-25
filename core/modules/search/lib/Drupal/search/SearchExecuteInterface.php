@@ -14,5 +14,4 @@ interface SearchExecuteInterface {
   public function __construct($keywords, array $query_parameters, array $request_attributes);
   public function isSearchExecutable();
   public function execute();
-
 }
