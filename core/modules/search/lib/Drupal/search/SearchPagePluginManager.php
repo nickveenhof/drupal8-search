@@ -28,7 +28,7 @@ class SearchPagePluginManager extends PluginManagerBase {
     $annotation_namespaces = array('Drupal\search\Annotation' => $namespaces['Drupal\search']);
     $this->discovery = new AnnotatedClassDiscovery('Search', $namespaces, $annotation_namespaces, 'Drupal\search\Annotation\SearchPagePlugin');
     $this->discovery = new AlterDecorator($this->discovery, 'search_info');
-    //$this->discovery = new CacheDecorator($this->discovery, 'search');
+    $this->discovery = new CacheDecorator($this->discovery, 'search');
 
     $this->factory = new DefaultFactory($this->discovery);
   }
