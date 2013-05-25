@@ -7,14 +7,12 @@
 
 namespace Drupal\search\Annotation;
 
-use Drupal\Component\Annotation\Plugin;
-
 /**
- * Defines an Entity type annotation object.
+ * Defines an SearchPagePlugin type annotation object.
  *
  * @Annotation
  */
-class SearchPagePlugin extends Plugin {
+class SearchPagePlugin extends Drupal\Component\Annotation\Plugin {
   /**
    * The ID.
    *
@@ -23,14 +21,14 @@ class SearchPagePlugin extends Plugin {
   public $id;
 
   /**
-   * The name of the module providing the type.
+   * The name of the module providing the plugin.
    *
    * @var string
    */
   public $module;
 
   /**
-   * The path of the search page.
+   * The path fragment to be added to search/ for the search page.
    *
    * @var string
    */
