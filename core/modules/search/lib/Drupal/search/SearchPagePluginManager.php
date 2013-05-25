@@ -1,6 +1,7 @@
 <?php
 
 /**
+ * @file
  * Contains \Drupal\search\SearchPagePluginManager.
  */
 
@@ -49,19 +50,4 @@ class SearchPagePluginManager extends PluginManagerBase {
     return new $plugin_class($configuration['keywords'], $configuration['query_parameters'], $configuration['request_attributes']);
   }
 
-  /**
-   * Implements \Drupal\Core\PluginManagerInterface::getInstance().
-   *
-   * Finds an instance based on the module that owns the plugin
-   */
-  public function getInstance(array $options = array()) {
-    $module = $options['module'];
-    foreach ($this->getDefinitions() as $plugin_id => $definition) {
-      if ($definition['module'] == $module && !empty($options['configuration'])) {
-        // Return the instance of the searchExecutor where the annotation
-        // has mentioned it belongs to a certain module. Eg.: node
-        return $this->createInstance($plugin_id, $options['configuration']);
-      }
-    }
-  }
 }
