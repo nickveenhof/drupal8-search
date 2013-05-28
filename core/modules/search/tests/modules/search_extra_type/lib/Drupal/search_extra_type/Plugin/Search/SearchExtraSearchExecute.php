@@ -80,7 +80,7 @@ class SearchExtraSearchExecute implements SearchExecuteInterface {
         'link' => url('node'),
         'type' => 'Dummy result type',
         'title' => 'Dummy title',
-        'snippet' => "Dummy search snippet to display. Keywords: {$keys}\n\nConditions: " . print_r($conditions, TRUE),
+        'snippet' => "Dummy search snippet to display. Keywords: {$this->keywords}\n\nConditions: " . print_r($this->conditions, TRUE),
       ),
     );
   }
