@@ -852,11 +852,9 @@ function user_menu() {
 
   $items['user/logout'] = array(
     'title' => 'Log out',
-    'access callback' => 'user_is_logged_in',
-    'page callback' => 'user_logout',
+    'route_name' => 'user_logout',
     'weight' => 10,
     'menu_name' => 'account',
-    'file' => 'user.pages.inc',
   );
 
   // User listing pages.
@@ -1173,6 +1171,9 @@ function user_login_form($form, &$form_state) {
     '#description' => t('Enter your @s username.', array('@s' => config('system.site')->get('name'))),
     '#required' => TRUE,
     '#attributes' => array(
+      'autocorrect' => 'off',
+      'autocapitalize' => 'off',
+      'spellcheck' => 'false',
       'autofocus' => 'autofocus',
     ),
   );

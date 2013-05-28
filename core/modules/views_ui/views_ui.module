@@ -31,9 +31,8 @@ function views_ui_menu() {
   );
 
   $items['admin/structure/views/add'] = array(
-    'title' => 'Add new view',
     'route_name' => 'views_ui.add',
-    'type' => MENU_LOCAL_ACTION,
+    'type' => MENU_SIBLING_LOCAL_TASK,
   );
 
   $items['admin/structure/views/settings'] = array(
@@ -114,6 +113,21 @@ function views_ui_entity_info(&$entity_info) {
 }
 
 /**
+ * Implements hook_local_actions().
+ */
+function views_ui_local_actions() {
+  return array(
+    array(
+      'route_name' => 'views_ui.add',
+      'title' => t('Add new view'),
+      'appears_on' => array(
+        'views_ui.list',
+      ),
+    ),
+  );
+}
+
+/**
  * Implements hook_theme().
  */
 function views_ui_theme() {
@@ -146,12 +160,6 @@ function views_ui_theme() {
 
     // Group of filters.
     'views_ui_build_group_filter_form' => array(
-      'render element' => 'form',
-      'file' => 'views_ui.theme.inc',
-    ),
-
-    // Reordering displays.
-    'views_ui_reorder_displays_form' => array(
       'render element' => 'form',
       'file' => 'views_ui.theme.inc',
     ),

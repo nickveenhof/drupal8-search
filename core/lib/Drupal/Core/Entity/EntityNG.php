@@ -170,8 +170,7 @@ class EntityNG extends Entity {
         if (isset($this->values[$property_name][$langcode])) {
           $value = $this->values[$property_name][$langcode];
         }
-        // @todo: Make entities implement the TypedDataInterface.
-        $this->fields[$property_name][$langcode] = typed_data()->getPropertyInstance($this, $property_name, $value);
+        $this->fields[$property_name][$langcode] = \Drupal::typedData()->getPropertyInstance($this, $property_name, $value);
       }
     }
     return $this->fields[$property_name][$langcode];
@@ -317,7 +316,7 @@ class EntityNG extends Entity {
         'bundle' => $this->bundle(),
       ),
     );
-    $translation = typed_data()->create($translation_definition, $fields);
+    $translation = \Drupal::typedData()->create($translation_definition, $fields);
     $translation->setStrictMode($strict);
     $translation->setContext('@' . $langcode, $this);
     return $translation;
@@ -328,6 +327,7 @@ class EntityNG extends Entity {
    */
   public function getTranslationLanguages($include_default = TRUE) {
     $translations = array();
+    $definitions = $this->getPropertyDefinitions();
     // Build an array with the translation langcodes set as keys. Empty
     // translations should not be included and must be skipped.
     foreach ($this->getProperties() as $name => $property) {
@@ -339,7 +339,7 @@ class EntityNG extends Entity {
           foreach ($this->values[$name] as $langcode => $values) {
             // If a value is there but the field object is empty, it has been
             // unset, so we need to skip the field also.
-            if ($values && !(isset($this->fields[$name][$langcode]) && $this->fields[$name][$langcode]->isEmpty())) {
+            if ($values && !empty($definitions[$name]['translatable']) && !(isset($this->fields[$name][$langcode]) && $this->fields[$name][$langcode]->isEmpty())) {
               $translations[$langcode] = TRUE;
             }
           }
