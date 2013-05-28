@@ -31,7 +31,7 @@ function search_view($plugin_id = NULL, $module = NULL, $keys = '') {
     }
   }
 
-  if (empty($info)) {
+  if (empty($plugin_id) || empty($info)) {
     // No path or invalid path: find the default module. Note that if there
     // are no enabled search modules, this function should never be called,
     // since hook_menu() would not have defined any search paths.

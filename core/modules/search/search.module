@@ -152,7 +152,7 @@ function search_menu() {
   $items['search'] = array(
     'title' => 'Search',
     'page callback' => 'search_view',
-    'page arguments' => array('', ''),
+    'page arguments' => array(NULL, '', ''),
     'access callback' => 'search_is_active',
     'type' => MENU_SUGGESTED_ITEM,
     'file' => 'search.pages.inc',
@@ -221,7 +221,7 @@ function search_menu() {
  */
 function search_is_active() {
   // This path cannot be accessed if there are no active modules.
-  return user_access('search content') && Drupal::service('plugin.manager.search.page')->getDefinitions();;
+  return user_access('search content') && search_get_info();
 }
 
 /**

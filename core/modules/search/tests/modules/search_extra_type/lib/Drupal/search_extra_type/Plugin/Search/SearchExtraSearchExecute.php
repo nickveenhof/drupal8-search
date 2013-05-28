@@ -58,7 +58,7 @@ class SearchExtraSearchExecute implements SearchExecuteInterface {
    *   A true or false depending on the implementation.
    */
   public function isSearchExecutable() {
-    return (bool) ($this->keywords && $this->conditions);
+    return (bool) ($this->keywords || $this->conditions);
   }
 
   /**
