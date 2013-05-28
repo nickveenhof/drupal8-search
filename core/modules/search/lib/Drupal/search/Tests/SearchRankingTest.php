@@ -100,7 +100,7 @@ class SearchRankingTest extends SearchTestBase {
       $config = array(
         'keywords' => 'rocks',
       );
-      $plugin = Drupal::service('plugin.manager.search.page')->createInstance('node_search_execute', $config);
+      $plugin = \Drupal::service('plugin.manager.search.page')->createInstance('node_search_execute', $config);
       // Do the search and assert the results.
       $set = $plugin->execute();
       $this->assertEqual($set[0]['node']->nid, $nodes[$node_rank][1]->nid, 'Search ranking "' . $node_rank . '" order.');
