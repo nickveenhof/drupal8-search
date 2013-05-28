@@ -19,14 +19,14 @@ interface SearchExecuteInterface {
    *   The keywords to search for.
    *
    * @param array $query_parameters
-   *   Optional query parameters for the given search. Could be used to refine
+   *   The query parameters in the URL for the given search. Could be used to refine
    *   the scope of the search.
    *
    * @param array $request_attributes
-   *   All the attributes that belong to executed request
-   *
+   *   All the attributes on the current request. Could be used to refine
+   *   the scope of the search.
    */
-  public function __construct($keywords, array $query_parameters, array $request_attributes);
+  public function __construct($keywords, array $query_parameters = array(), array $request_attributes = array());
 
   /**
    * Verifies if the given parameters are valid enough to execute a search for.

@@ -42,7 +42,7 @@ class SearchPagePluginManager extends PluginManagerBase {
     $plugin_class = DefaultFactory::getPluginClass($plugin_id, $plugin_definition);
 
     // Normalize the data
-    $configuration + array(
+    $configuration += array(
       'keywords' => '',
       'query_parameters' => array(),
       'request_attributes' => array(),

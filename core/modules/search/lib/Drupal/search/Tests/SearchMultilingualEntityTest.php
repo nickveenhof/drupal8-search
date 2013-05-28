@@ -121,7 +121,12 @@ class SearchMultilingualEntityTest extends SearchTestBase {
       // in one or more languages. Let's pick the last language variant from the
       // body array and execute a search using that as a search keyword.
       $body_language_variant = end($node->body);
-      $search_result = node_search_execute($body_language_variant[0]['value']);
+      $config = array(
+        'keywords' => $body_language_variant[0]['value'],
+      );
+      $plugin = Drupal::service('plugin.manager.search.page')->createInstance('node_search_execute', $config);
+      // Do the search and assert the results.
+      $search_result = $plugin->execute();
       // See whether we get the same node as a result.
       $sts = $this->assertTrue(!empty($search_result[0]['node']->nid)
         && $search_result[0]['node']->nid == $node->nid,
