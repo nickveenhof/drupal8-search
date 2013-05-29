@@ -11,6 +11,8 @@ use Drupal\Component\Plugin\ContextAwarePluginBase;
 use Drupal\search\SearchExecuteInterface;
 use Drupal\search\Annotation\SearchExecutePlugin;
 
+use Symfony\Component\DependencyInjection\ContainerInterface;
+
 /**
  * Executes a keyword search aginst the search index.
  *
@@ -18,14 +20,14 @@ use Drupal\search\Annotation\SearchExecutePlugin;
  *   id = "node_search_execute",
  *   title = "Content",
  *   path = "node",
- *   module = "node"
+ *   module = "node",
  *   context = {
  *     "plugin.manager.entity" = {
  *       "class" = "\Drupal\Core\Entity\EntityManager"
- *     }
+ *     },
  *     "database" = {
  *       "class" = "\Drupal\Core\Database\Connection"
- *     }
+ *     },
  *     "module_handler" = {
  *       "class" = "\Drupal\Core\Extension\ModuleHandlerInterface"
  *     }
@@ -64,7 +66,7 @@ class NodeSearchExecute extends ContextAwarePluginBase implements SearchExecuteI
     }
     $keys = $this->configuration['keywords'];
     // Build matching conditions
-    $query = $this->getContext('database')->select('search_index', 'i', array('target' => 'slave'))
+    $query = $this->getContextValue('database')->select('search_index', 'i', array('target' => 'slave'))
       ->extend('Drupal\search\SearchQuery')
       ->extend('Drupal\Core\Database\Query\PagerSelectExtender');
     $query->join('node_field_data', 'n', 'n.nid = i.sid');

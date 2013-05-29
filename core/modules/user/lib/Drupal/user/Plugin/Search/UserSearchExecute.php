@@ -10,6 +10,8 @@ namespace Drupal\user\Plugin\Search;
 use Drupal\search\SearchExecuteInterface;
 use Drupal\search\Annotation\SearchExecutePlugin;
 
+use Symfony\Component\DependencyInjection\ContainerInterface;
+
 /**
  * Executes a keyword search aginst the search index.
  *
@@ -17,14 +19,14 @@ use Drupal\search\Annotation\SearchExecutePlugin;
  *   id = "user_search_execute",
  *   title = "Users",
  *   path = "user",
- *   module = "user"
+ *   module = "user",
  *   context = {
  *     "plugin.manager.entity" = {
  *       "class" = "\Drupal\Core\Entity\EntityManager"
- *     }
+ *     },
  *     "database" = {
  *       "class" = "\Drupal\Core\Database\Connection"
- *     }
+ *     },
  *     "module_handler" = {
  *       "class" = "\Drupal\Core\Extension\ModuleHandlerInterface"
  *     }
