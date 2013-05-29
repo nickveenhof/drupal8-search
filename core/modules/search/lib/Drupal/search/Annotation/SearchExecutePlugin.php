@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Contains \Drupal\search\Annotation\SearchPagePlugin.
+ * Contains \Drupal\search\Annotation\SearchExecutePlugin.
  */
 
 namespace Drupal\search\Annotation;

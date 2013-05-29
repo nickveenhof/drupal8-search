@@ -8,39 +8,50 @@
 namespace Drupal\user\Plugin\Search;
 
 use Drupal\search\SearchExecuteInterface;
-use Drupal\search\Annotation\SearchPagePlugin;
+use Drupal\search\Annotation\SearchExecutePlugin;
 
 /**
  * Executes a keyword search aginst the search index.
  *
- * @SearchPagePlugin(
+ * @SearchExecutePlugin(
  *   id = "user_search_execute",
  *   title = "Users",
  *   path = "user",
  *   module = "user"
+ *   context = {
+ *     "plugin.manager.entity" = {
+ *       "class" = "\Drupal\Core\Entity\EntityManager"
+ *     }
+ *     "database" = {
+ *       "class" = "\Drupal\Core\Database\Connection"
+ *     }
+ *     "module_handler" = {
+ *       "class" = "\Drupal\Core\Extension\ModuleHandlerInterface"
+ *     }
+ *   }
  * )
  */
-class UserSearchExecute implements SearchExecuteInterface {
+class UserSearchExecute extends ContextAwarePluginBase implements SearchExecuteInterface {
 
-  /**
-   * The keywords to search for.
-   *
-   * @var string
-   */
-  protected $keywords;
 
-  /**
-   * {@inheritdoc}
-   */
-  public function __construct($keywords, array $query_parameters = array(), array $request_attributes = array()) {
-    $this->keywords = $keywords;
+  static public function create(ContainerInterface $container, array $configuration, $plugin_id, array $plugin_definition) {
+    if (empty($configuration['context']['plugin.manager.entity'])) {
+      $configuration['context']['plugin.manager.entity'] = $container->get('plugin.manager.entity');
+    }
+    if (empty($configuration['context']['database'])) {
+      $configuration['context']['database'] = $container->get('database');
+    }
+    if (empty($configuration['context']['module_handler'])) {
+      $configuration['context']['module_handler'] = $container->get('module_handler');
+    }
+    return new static($configuration, $plugin_id, $plugin_definition);
   }
 
   /**
    * {@inheritdoc}
    */
   public function isSearchExecutable() {
-    return (bool) $this->keywords;
+    return !empty($this->configuration['keywords']);
   }
 
   /**
@@ -51,7 +62,7 @@ class UserSearchExecute implements SearchExecuteInterface {
     if (!$this->isSearchExecutable()) {
       return $results;
     }
-    $keys = $this->keywords;
+    $keys = $this->configuration['keywords'];
     $find = array();
     // Replace wildcards with MySQL/PostgreSQL wildcards.
     $keys = preg_replace('!\*+!', '%', $keys);

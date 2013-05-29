@@ -31,16 +31,8 @@ use Drupal\search\Annotation\SearchExecutePlugin;
  *     }
  *   }
  * )
- * )
  */
 class NodeSearchExecute extends ContextAwarePluginBase implements SearchExecuteInterface {
-
-  /**
-   * The keywords to search for.
-   *
-   * @var string
-   */
-  protected $keywords;
 
   static public function create(ContainerInterface $container, array $configuration, $plugin_id, array $plugin_definition) {
     if (empty($configuration['context']['plugin.manager.entity'])) {
@@ -52,13 +44,14 @@ class NodeSearchExecute extends ContextAwarePluginBase implements SearchExecuteI
     if (empty($configuration['context']['module_handler'])) {
       $configuration['context']['module_handler'] = $container->get('module_handler');
     }
+    return new static($configuration, $plugin_id, $plugin_definition);
   }
 
   /**
    * {@inheritdoc}
    */
   public function isSearchExecutable() {
-    return (bool) $this->keywords;
+    return !empty($this->configuration['keywords']);
   }
 
   /**
@@ -69,7 +62,7 @@ class NodeSearchExecute extends ContextAwarePluginBase implements SearchExecuteI
     if (!$this->isSearchExecutable()) {
       return $results;
     }
-    $keys = $this->keywords;
+    $keys = $this->configuration['keywords'];
     // Build matching conditions
     $query = $this->getContext('database')->select('search_index', 'i', array('target' => 'slave'))
       ->extend('Drupal\search\SearchQuery')
@@ -102,10 +95,10 @@ class NodeSearchExecute extends ContextAwarePluginBase implements SearchExecuteI
       ->limit(10)
       ->execute();
 
-    $entity_manger = $this->getContext('plugin.manager.entity');
+    $entity_manger = $this->getContextValue('plugin.manager.entity');
     $node_storage = $entity_manger->getStorageController('node');
     $node_render = $entity_manger->getRenderController('node');
-    $module_handler = $this->getContext('module_handler');
+    $module_handler = $this->getContextValue('module_handler');
 
     foreach ($find as $item) {
       // Render the node.
@@ -145,7 +138,7 @@ class NodeSearchExecute extends ContextAwarePluginBase implements SearchExecuteI
    *   A query object that has been extended with the Search DB Extender.
    */
   protected function addNodeRankings(SelectExtender $query) {
-    if ($ranking = $this->getContext('module_handler')->invokeAll('ranking')) {
+    if ($ranking = $this->getContextValue('module_handler')->invokeAll('ranking')) {
       $tables = &$query->getTables();
       foreach ($ranking as $rank => $values) {
         if ($node_rank = variable_get('node_rank_' . $rank, 0)) {

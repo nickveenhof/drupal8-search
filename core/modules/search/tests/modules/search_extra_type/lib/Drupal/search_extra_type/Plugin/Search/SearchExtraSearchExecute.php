@@ -2,25 +2,26 @@
 
 /**
  * @file
- * Contains \Drupal\node\Plugin\Search\NodeSearchExecute.
+ * Contains \Drupal\search_extra_type\Plugin\Search\SearchExtraSearchExecute.
  */
 
 namespace Drupal\search_extra_type\Plugin\Search;
 
+use Drupal\Component\Plugin\PluginBase;
 use Drupal\search\SearchExecuteInterface;
-use Drupal\search\Annotation\SearchPagePlugin;
+use Drupal\search\Annotation\SearchExecutePlugin;
 
 /**
  * Executes a keyword search aginst the search index.
  *
- * @SearchPagePlugin(
+ * @SearchExecutePlugin(
  *   id = "search_extra_type_search_execute",
  *   title = "Dummy search type",
  *   path = "dummy_path",
  *   module = "search_extra_type"
  * )
  */
-class SearchExtraSearchExecute implements SearchExecuteInterface {
+class SearchExtraSearchExecute extends PluginBase implements SearchExecuteInterface {
 
   /**
    * The keywords to search for.
@@ -44,13 +45,15 @@ class SearchExtraSearchExecute implements SearchExecuteInterface {
    *   All the attributes that belong to executed request
    *
    */
-  public function __construct($keywords, array $query_parameters, array $request_attributes) {
-    $this->keywords = (string) $keywords;
-    if (!empty($query_parameters['search_conditions'])) {
-      $this->conditions['search_conditions'] = $query_parameters['search_conditions'];
+  public function __construct(array $configuration, $plugin_id, array $plugin_definition) {
+    $this->configuration = $configuration;
+    $this->pluginId = $plugin_id;
+    $this->pluginDefinition = $plugin_definition;
+    if (!empty($this->configuration['query_parameters']['search_conditions'])) {
+      $this->conditions['search_conditions'] = $this->configuration['query_parameters']['search_conditions'];
     }
+    $this->keywords = (string) $this->configuration['keywords'];
   }
-
   /**
    * Verifies if the given parameters are valid enough to execute a search for.
    *
