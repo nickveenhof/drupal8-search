@@ -12,7 +12,7 @@ namespace Drupal\search\Annotation;
  *
  * @Annotation
  */
-class SearchPagePlugin extends \Drupal\Component\Annotation\Plugin {
+class SearchExecutePlugin extends \Drupal\Component\Annotation\Plugin {
 
   /**
    * The ID.

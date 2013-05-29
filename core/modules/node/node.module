@@ -1236,28 +1236,6 @@ function node_permission() {
 }
 
 /**
- * Gathers the rankings from the the hook_ranking() implementations.
- *
- * @param $query
- *   A query object that has been extended with the Search DB Extender.
- */
-function _node_rankings(SelectExtender $query) {
-  if ($ranking = module_invoke_all('ranking')) {
-    $tables = &$query->getTables();
-    foreach ($ranking as $rank => $values) {
-      if ($node_rank = variable_get('node_rank_' . $rank, 0)) {
-        // If the table defined in the ranking isn't already joined, then add it.
-        if (isset($values['join']) && !isset($tables[$values['join']['alias']])) {
-          $query->addJoin($values['join']['type'], $values['join']['table'], $values['join']['alias'], $values['join']['on']);
-        }
-        $arguments = isset($values['arguments']) ? $values['arguments'] : array();
-        $query->addScore($values['score'], $arguments, $node_rank);
-      }
-    }
-  }
-}
-
-/**
  * Implements hook_search_access().
  */
 function node_search_access() {
