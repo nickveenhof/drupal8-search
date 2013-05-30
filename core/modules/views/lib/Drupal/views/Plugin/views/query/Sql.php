@@ -364,7 +364,7 @@ class Sql extends QueryPluginBase {
    *   adding parts to the query. Or FALSE if the table was not able to be
    *   added.
    */
-  function add_table($table, $relationship = NULL, JoinPluginBase $join = NULL, $alias = NULL) {
+  public function addTable($table, $relationship = NULL, JoinPluginBase $join = NULL, $alias = NULL) {
     if (!$this->ensure_path($table, $relationship, $join)) {
       return FALSE;
     }
@@ -379,7 +379,7 @@ class Sql extends QueryPluginBase {
   /**
    * Add a table to the query without ensuring the path.
    *
-   * This is a pretty internal function to Views and add_table() or
+   * This is a pretty internal function to Views and addTable() or
    * ensure_table() should be used instead of this one, unless you are
    * absolutely sure this is what you want.
    *
@@ -554,7 +554,7 @@ class Sql extends QueryPluginBase {
       //
       // This can be done safely here but not lower down in
       // queue_table(), because queue_table() is also used by
-      // add_table() which requires the ability to intentionally add
+      // addTable() which requires the ability to intentionally add
       // the same table with the same join multiple times.  For
       // example, a view that filters on 3 taxonomy terms using AND
       // needs to join taxonomy_term_data 3 times with the same join.
@@ -707,7 +707,7 @@ class Sql extends QueryPluginBase {
    * If you need the alias of a table with a particular relationship, use
    * ensure_table().
    */
-  function get_table_info($table) {
+  public function getTableInfo($table) {
     if (!empty($this->table_queue[$table])) {
       return $this->table_queue[$table];
     }
@@ -796,7 +796,7 @@ class Sql extends QueryPluginBase {
    * Remove all fields that may've been added; primarily used for summary
    * mode where we're changing the query because we didn't get data we needed.
    */
-  function clear_fields() {
+  public function clearFields() {
     $this->fields = array();
   }
 
@@ -953,7 +953,7 @@ class Sql extends QueryPluginBase {
    *
    * @see QueryConditionInterface::having()
    */
-  function add_having_expression($group, $snippet, $args = array()) {
+  public function addHavingExpression($group, $snippet, $args = array()) {
     // Ensure all variants of 0 are actually 0. Thus '', 0 and NULL are all
     // the default group.
     if (empty($group)) {
@@ -1044,9 +1044,11 @@ class Sql extends QueryPluginBase {
   /**
    * Returns the alias for the given field added to $table.
    *
+   * @access protected
+   *
    * @see views_plugin_query_default::add_field()
    */
-  function get_field_alias($table_alias, $field) {
+  protected function getFieldAlias($table_alias, $field) {
     return isset($this->field_aliases[$table_alias][$field]) ? $this->field_aliases[$table_alias][$field] : FALSE;
   }
 
@@ -1055,7 +1057,7 @@ class Sql extends QueryPluginBase {
    *
    * @see SelectQuery::addTag()
    */
-  function add_tag($tag) {
+  public function addTag($tag) {
     $this->tags[] = $tag;
   }
 
@@ -1084,7 +1086,7 @@ class Sql extends QueryPluginBase {
    * @param $where
    *   'where' or 'having'.
    */
-  function build_condition($where = 'where') {
+  protected function buildCondition($where = 'where') {
     $has_condition = FALSE;
     $has_arguments = FALSE;
     $has_filter = FALSE;
@@ -1148,7 +1150,7 @@ class Sql extends QueryPluginBase {
    * @return array
    *   An array of the fieldnames which are non-aggregates.
    */
-  function get_non_aggregates() {
+  protected function getNonAggregates() {
     $non_aggregates = array();
     foreach ($this->fields as $field) {
       $string = '';
@@ -1204,7 +1206,7 @@ class Sql extends QueryPluginBase {
       }
 
       if (!empty($field['function'])) {
-        $info = $this->get_aggregation_info();
+        $info = $this->getAggregationInfo();
         if (!empty($info[$field['function']]['method']) && is_callable(array($this, $info[$field['function']]['method']))) {
           $string = $this::$info[$field['function']]['method']($field['function'], $string);
           $placeholders = !empty($field['placeholders']) ? $field['placeholders'] : array();
@@ -1307,7 +1309,7 @@ class Sql extends QueryPluginBase {
 
     // Assemble the groupby clause, if any.
     $this->has_aggregate = FALSE;
-    $non_aggregates = $this->get_non_aggregates();
+    $non_aggregates = $this->getNonAggregates();
     if (count($this->having)) {
       $this->has_aggregate = TRUE;
     }
@@ -1318,7 +1320,7 @@ class Sql extends QueryPluginBase {
 
     // Make sure each entity table has the base field added so that the
     // entities can be loaded.
-    $entity_tables = $this->get_entity_tables();
+    $entity_tables = $this->getEntityTables();
     if ($entity_tables) {
       $params = array();
       if ($groupby) {
@@ -1343,7 +1345,7 @@ class Sql extends QueryPluginBase {
       foreach ($groupby as $field) {
         $query->groupBy($field);
       }
-      if (!empty($this->having) && $condition = $this->build_condition('having')) {
+      if (!empty($this->having) && $condition = $this->buildCondition('having')) {
         $query->havingCondition($condition);
       }
     }
@@ -1362,7 +1364,7 @@ class Sql extends QueryPluginBase {
       }
     }
 
-    if (!empty($this->where) && $condition = $this->build_condition('where')) {
+    if (!empty($this->where) && $condition = $this->buildCondition('where')) {
       $query->condition($condition);
     }
 
@@ -1478,11 +1480,11 @@ class Sql extends QueryPluginBase {
 
       try {
         if ($view->pager->use_count_query() || !empty($view->get_total_rows)) {
-          $view->pager->execute_count_query($count_query);
+          $view->pager->executeCountQuery($count_query);
         }
 
         // Let the pager modify the query to add limits.
-        $view->pager->pre_execute($query);
+        $view->pager->preExecute($query);
 
         if (!empty($this->limit) || !empty($this->offset)) {
           // We can't have an offset without a limit, so provide a very large limit instead.
@@ -1500,7 +1502,7 @@ class Sql extends QueryPluginBase {
 
         $view->pager->postExecute($view->result);
         if ($view->pager->use_count_query() || !empty($view->get_total_rows)) {
-          $view->total_rows = $view->pager->get_total_items();
+          $view->total_rows = $view->pager->getTotalItems();
         }
 
         // Load all entities contained in the results.
@@ -1537,7 +1539,7 @@ class Sql extends QueryPluginBase {
    * @return array
    *   An array of table information, keyed by table alias.
    */
-  function get_entity_tables() {
+  public function getEntityTables() {
     // Start with the base table.
     $entity_tables = array();
     $views_data = Views::viewsData();
@@ -1582,7 +1584,7 @@ class Sql extends QueryPluginBase {
    * $result->_relationship_entities[$relationship_id];
    */
   function loadEntities(&$results) {
-    $entity_tables = $this->get_entity_tables();
+    $entity_tables = $this->getEntityTables();
     // No entity tables found, nothing else to do here.
     if (empty($entity_tables)) {
       return;
@@ -1600,7 +1602,7 @@ class Sql extends QueryPluginBase {
       $entity_type = $table['entity_type'];
       $info = entity_get_info($entity_type);
       $id_key = empty($table['revision']) ? $info['entity_keys']['id'] : $info['entity_keys']['revision'];
-      $id_alias = $this->get_field_alias($table_alias, $id_key);
+      $id_alias = $this->getFieldAlias($table_alias, $id_key);
 
       foreach ($results as $index => $result) {
         // Store the entity id if it was found.
@@ -1643,11 +1645,11 @@ class Sql extends QueryPluginBase {
     }
   }
 
-  function add_signature(ViewExecutable $view) {
+  public function addSignature(ViewExecutable $view) {
     $view->query->add_field(NULL, "'" . $view->storage->id() . ':' . $view->current_display . "'", 'view_name');
   }
 
-  function get_aggregation_info() {
+  public function getAggregationInfo() {
     // @todo -- need a way to get database specific and customized aggregation
     // functions into here.
     return array(
@@ -1657,7 +1659,7 @@ class Sql extends QueryPluginBase {
       ),
       'count' => array(
         'title' => t('Count'),
-        'method' => 'aggregation_method_simple',
+        'method' => 'aggregationMethodSimple',
         'handler' => array(
           'argument' => 'groupby_numeric',
           'field' => 'numeric',
@@ -1667,7 +1669,7 @@ class Sql extends QueryPluginBase {
       ),
       'count_distinct' => array(
         'title' => t('Count DISTINCT'),
-        'method' => 'aggregation_method_distinct',
+        'method' => 'aggregationMethodDistinct',
         'handler' => array(
           'argument' => 'groupby_numeric',
           'field' => 'numeric',
@@ -1677,7 +1679,7 @@ class Sql extends QueryPluginBase {
       ),
       'sum' => array(
         'title' => t('Sum'),
-        'method' => 'aggregation_method_simple',
+        'method' => 'aggregationMethodSimple',
         'handler' => array(
           'argument' => 'groupby_numeric',
           'field' => 'numeric',
@@ -1687,7 +1689,7 @@ class Sql extends QueryPluginBase {
       ),
       'avg' => array(
         'title' => t('Average'),
-        'method' => 'aggregation_method_simple',
+        'method' => 'aggregationMethodSimple',
         'handler' => array(
           'argument' => 'groupby_numeric',
           'field' => 'numeric',
@@ -1697,7 +1699,7 @@ class Sql extends QueryPluginBase {
       ),
       'min' => array(
         'title' => t('Minimum'),
-        'method' => 'aggregation_method_simple',
+        'method' => 'aggregationMethodSimple',
         'handler' => array(
           'argument' => 'groupby_numeric',
           'field' => 'numeric',
@@ -1707,7 +1709,7 @@ class Sql extends QueryPluginBase {
       ),
       'max' => array(
         'title' => t('Maximum'),
-        'method' => 'aggregation_method_simple',
+        'method' => 'aggregationMethodSimple',
         'handler' => array(
           'argument' => 'groupby_numeric',
           'field' => 'numeric',
@@ -1717,7 +1719,7 @@ class Sql extends QueryPluginBase {
       ),
       'stddev_pop' => array(
         'title' => t('Standard deviation'),
-        'method' => 'aggregation_method_simple',
+        'method' => 'aggregationMethodSimple',
         'handler' => array(
           'argument' => 'groupby_numeric',
           'field' => 'numeric',
@@ -1728,11 +1730,11 @@ class Sql extends QueryPluginBase {
     );
   }
 
-  function aggregation_method_simple($group_type, $field) {
+  public function aggregationMethodSimple($group_type, $field) {
     return strtoupper($group_type) . '(' . $field . ')';
   }
 
-  function aggregation_method_distinct($group_type, $field) {
+  public function aggregationMethodDistinct($group_type, $field) {
     $group_type = str_replace('_distinct', '', $group_type);
     return strtoupper($group_type) . '(DISTINCT ' . $field . ')';
   }

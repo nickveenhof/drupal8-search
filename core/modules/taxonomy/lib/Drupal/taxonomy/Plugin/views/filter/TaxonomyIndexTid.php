@@ -37,7 +37,7 @@ class TaxonomyIndexTid extends ManyToOne {
 
   public function hasExtraOptions() { return TRUE; }
 
-  function get_value_options() { /* don't overwrite the value options */ }
+  public function getValueOptions() { /* don't overwrite the value options */ }
 
   protected function defineOptions() {
     $options = parent::defineOptions();
@@ -165,7 +165,7 @@ class TaxonomyIndexTid extends ManyToOne {
         $identifier = $this->options['expose']['identifier'];
 
         if (!empty($this->options['expose']['reduce'])) {
-          $options = $this->reduce_value_options($options);
+          $options = $this->reduceValueOptions($options);
 
           if (!empty($this->options['expose']['multiple']) && empty($this->options['expose']['required'])) {
             $default_value = array();

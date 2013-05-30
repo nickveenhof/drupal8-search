@@ -72,9 +72,9 @@ class Node extends WizardPluginBase {
   }
 
   /**
-   * Overrides Drupal\views\Plugin\views\wizard\WizardPluginBase::row_style_options().
+   * Overrides Drupal\views\Plugin\views\wizard\WizardPluginBase::rowStyleOptions().
    */
-  protected function row_style_options() {
+  protected function rowStyleOptions() {
     $options = array();
     $options['teasers'] = t('teasers');
     $options['full_posts'] = t('full posts');
@@ -94,8 +94,8 @@ class Node extends WizardPluginBase {
    * @param string $type
    *   The display ID (e.g. 'page' or 'block').
    */
-  protected function build_form_style(array &$form, array &$form_state, $type) {
-    parent::build_form_style($form, $form_state, $type);
+  protected function buildFormStyle(array &$form, array &$form_state, $type) {
+    parent::buildFormStyle($form, $form_state, $type);
     $style_form =& $form['displays'][$type]['options']['style'];
     // Some style plugins don't support row plugins so stop here if that's the
     // case.
@@ -131,10 +131,10 @@ class Node extends WizardPluginBase {
   }
 
   /**
-   * Overrides Drupal\views\Plugin\views\wizard\WizardPluginBase::default_display_options().
+   * Overrides Drupal\views\Plugin\views\wizard\WizardPluginBase::defaultDisplayOptions().
    */
-  protected function default_display_options() {
-    $display_options = parent::default_display_options();
+  protected function defaultDisplayOptions() {
+    $display_options = parent::defaultDisplayOptions();
 
     // Add permission-based access control.
     $display_options['access']['type'] = 'perm';
@@ -242,12 +242,12 @@ class Node extends WizardPluginBase {
   }
 
   /**
-   * Overrides Drupal\views\Plugin\views\wizard\WizardPluginBase::build_filters().
+   * Overrides Drupal\views\Plugin\views\wizard\WizardPluginBase::buildFilters().
    *
    * Add some options for filter by taxonomy terms.
    */
-  protected function build_filters(&$form, &$form_state) {
-    parent::build_filters($form, $form_state);
+  protected function buildFilters(&$form, &$form_state) {
+    parent::buildFilters($form, $form_state);
 
     $selected_bundle = static::getSelected($form_state, array('show', 'type'), 'all', $form['displays']['show']['type']);
 

@@ -210,7 +210,7 @@ abstract class SqlBase extends PagerPluginBase {
   }
 
   public function query() {
-    if ($this->items_per_page_exposed()) {
+    if ($this->itemsPerPageExposed()) {
       $query = drupal_container()->get('request')->query;
       $items_per_page = $query->get('items_per_page');
       if ($items_per_page > 0) {
@@ -237,7 +237,7 @@ abstract class SqlBase extends PagerPluginBase {
       }
     }
 
-    $this->view->query->set_limit($limit);
+    $this->view->query->setLimit($limit);
     $this->view->query->set_offset($offset);
   }
 
@@ -276,7 +276,7 @@ abstract class SqlBase extends PagerPluginBase {
     $this->current_page = max(0, intval($pager_page_array[$this->options['id']]));
   }
 
-  function get_pager_total() {
+  public function getPagerTotal() {
     if ($items_per_page = intval($this->get_items_per_page())) {
       return ceil($this->total_items / $items_per_page);
     }
@@ -309,7 +309,7 @@ abstract class SqlBase extends PagerPluginBase {
       // Set the item count for the pager.
       $pager_total_items[$this->options['id']] = $this->total_items;
       // Calculate and set the count of available pages.
-      $pager_total[$this->options['id']] = $this->get_pager_total();
+      $pager_total[$this->options['id']] = $this->getPagerTotal();
 
       // See if the requested page was within range:
       if ($this->current_page >= $pager_total[$this->options['id']]) {
@@ -324,10 +324,10 @@ abstract class SqlBase extends PagerPluginBase {
   }
 
   function uses_exposed() {
-    return $this->items_per_page_exposed() || $this->offset_exposed();
+    return $this->itemsPerPageExposed() || $this->offset_exposed();
   }
 
-  function items_per_page_exposed() {
+  protected function itemsPerPageExposed() {
     return !empty($this->options['expose']['items_per_page']);
   }
 
@@ -336,7 +336,7 @@ abstract class SqlBase extends PagerPluginBase {
   }
 
   function exposed_form_alter(&$form, &$form_state) {
-    if ($this->items_per_page_exposed()) {
+    if ($this->itemsPerPageExposed()) {
       $options = explode(',', $this->options['expose']['items_per_page_options']);
       $sanitized_options = array();
       if (is_array($options)) {

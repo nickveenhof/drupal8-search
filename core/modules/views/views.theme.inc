@@ -151,7 +151,7 @@ function template_preprocess_views_view(&$vars) {
             'view_dom_id' => $vars['dom_id'],
             // To fit multiple views on a page, the programmer may have
             // overridden the display's pager_element.
-            'pager_element' => isset($view->pager) ? $view->pager->get_pager_id() : 0,
+            'pager_element' => isset($view->pager) ? $view->pager->getPagerId() : 0,
           ),
         ),
       ),
@@ -215,7 +215,7 @@ function template_preprocess_views_view_fields(&$vars) {
       $object->handler = &$view->field[$id];
       $object->inline = !empty($vars['options']['inline'][$id]);
 
-      $object->element_type = $object->handler->element_type(TRUE, !$vars['options']['default_field_elements'], $object->inline);
+      $object->element_type = $object->handler->elementType(TRUE, !$vars['options']['default_field_elements'], $object->inline);
       if ($object->element_type) {
         $attributes = array();
         if ($object->handler->options['element_default_classes']) {
@@ -253,7 +253,7 @@ function template_preprocess_views_view_fields(&$vars) {
       $object->class = drupal_clean_css_identifier($id);
 
       $previous_inline = $object->inline;
-      $object->inline_html = $object->handler->element_wrapper_type(TRUE, TRUE);
+      $object->inline_html = $object->handler->elementWrapperType(TRUE, TRUE);
       if ($object->inline_html === '' && $vars['options']['default_field_elements']) {
         $object->inline_html = $object->inline ? 'span' : 'div';
       }
@@ -269,7 +269,7 @@ function template_preprocess_views_view_fields(&$vars) {
           $attributes['class'][] = 'views-field-' . $object->class;
         }
 
-        if ($classes = $object->handler->element_wrapper_classes($view->row_index)) {
+        if ($classes = $object->handler->elementWrapperClasses($view->row_index)) {
           $attributes['class'][] = $classes;
         }
         $attributes = new Attribute($attributes);
@@ -298,7 +298,7 @@ function template_preprocess_views_view_fields(&$vars) {
             $attributes['class'][] = 'views-label-' . $object->class;
           }
 
-          $element_label_class = $object->handler->element_label_classes($view->row_index);
+          $element_label_class = $object->handler->elementLabelClasses($view->row_index);
           if ($element_label_class) {
             $attributes['class'][] = $element_label_class;
           }
@@ -438,7 +438,7 @@ function template_preprocess_views_view_summary(&$vars) {
   $argument->process_summary_arguments($row_args);
 
   foreach ($vars['rows'] as $id => $row) {
-    $vars['rows'][$id]->link = $argument->summary_name($row);
+    $vars['rows'][$id]->link = $argument->summaryName($row);
     $args = $view->args;
     $args[$argument->position] = $row_args[$id];
 
@@ -502,7 +502,7 @@ function template_preprocess_views_view_summary_unformatted(&$vars) {
     if ($count++) {
       $vars['rows'][$id]->separator = filter_xss_admin($vars['options']['separator']);
     }
-    $vars['rows'][$id]->link = $argument->summary_name($row);
+    $vars['rows'][$id]->link = $argument->summaryName($row);
     $args = $view->args;
     $args[$argument->position] = $row_args[$id];
 
@@ -607,7 +607,7 @@ function template_preprocess_views_view_table(&$vars) {
         $vars['header_classes'][$field]['class'][] = 'views-field-' . $vars['fields'][$field];
       }
       $vars['header_classes'][$field] = new Attribute($vars['header_classes'][$field]);
-      $class = $fields[$field]->element_label_classes(0);
+      $class = $fields[$field]->elementLabelClasses(0);
       if ($class) {
         $vars['header_classes'][$field]['class'][] = $class;
       }
@@ -654,7 +654,7 @@ function template_preprocess_views_view_table(&$vars) {
 
       if (!empty($fields[$field]) && empty($fields[$field]->options['exclude'])) {
         $field_output = $handler->get_field($num, $field);
-        $element_type = $fields[$field]->element_type(TRUE, TRUE);
+        $element_type = $fields[$field]->elementType(TRUE, TRUE);
         if ($element_type) {
           $field_output = '<' . $element_type . '>' . $field_output . '</' . $element_type . '>';
         }
@@ -711,7 +711,7 @@ function template_preprocess_views_view_table(&$vars) {
         $vars['row_classes'][$num]['class'][] = 'views-row-last';
       }
     }
-    if ($row_class = $handler->get_row_class($num)) {
+    if ($row_class = $handler->getRowClass($num)) {
       $vars['row_classes'][$num]['class'][] = $row_class;
     }
     $vars['row_classes'][$num] = new Attribute($vars['row_classes'][$num]);
@@ -858,7 +858,7 @@ function template_preprocess_views_view_grid(&$vars) {
           $vars['column_classes'][$row_number][$column_number]['class'][] = 'col-last';
         }
       }
-      if (isset($row_indexes[$row_number][$column_number]) && $column_class = $view->style_plugin->get_row_class($row_indexes[$row_number][$column_number])) {
+      if (isset($row_indexes[$row_number][$column_number]) && $column_class = $view->style_plugin->getRowClass($row_indexes[$row_number][$column_number])) {
         $vars['column_classes'][$row_number][$column_number]['class'][] = $column_class;
       }
       $vars['column_classes'][$row_number][$column_number] = new Attribute($vars['column_classes'][$row_number][$column_number]);
@@ -910,7 +910,7 @@ function template_preprocess_views_view_unformatted(&$vars) {
       }
     }
 
-    if ($row_class = $view->style_plugin->get_row_class($id)) {
+    if ($row_class = $view->style_plugin->getRowClass($id)) {
       $vars['row_classes'][$id]['class'][] = $row_class;
     }
     $vars['row_classes'][$id] = new Attribute($vars['row_classes'][$id]);
@@ -972,7 +972,7 @@ function template_preprocess_views_view_rss(&$vars) {
   // The RSS 2.0 "spec" doesn't indicate HTML can be used in the description.
   // We strip all HTML tags, but need to prevent double encoding from properly
   // escaped source data (such as &amp becoming &amp;amp;).
-  $vars['description'] = check_plain(decode_entities(strip_tags($style->get_description())));
+  $vars['description'] = check_plain(decode_entities(strip_tags($style->getDescription())));
 
   if ($view->display_handler->getOption('sitename_title')) {
     $title = $config->get('name');

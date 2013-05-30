@@ -980,13 +980,6 @@ function system_menu() {
     'access arguments' => array('administer site configuration'),
     'file' => 'system.admin.inc',
   );
-  $items['admin/reports/status/run-cron'] = array(
-    'title' => 'Run cron',
-    'page callback' => 'system_run_cron',
-    'access arguments' => array('administer site configuration'),
-    'type' => MENU_CALLBACK,
-    'file' => 'system.admin.inc',
-  );
   $items['admin/reports/status/php'] = array(
     'title' => 'PHP',
     'page callback' => 'system_php',
@@ -2993,7 +2986,7 @@ function _system_rebuild_theme_data() {
 
   // Set defaults for theme info.
   $defaults = array(
-    'engine' => 'phptemplate',
+    'engine' => 'twig',
     'regions' => array(
       'sidebar_first' => 'Left sidebar',
       'sidebar_second' => 'Right sidebar',

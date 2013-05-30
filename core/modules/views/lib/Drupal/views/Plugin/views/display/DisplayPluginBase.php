@@ -283,7 +283,7 @@ abstract class DisplayPluginBase extends PluginBase {
     if ($this->usesPager()) {
       $pager = $this->getPlugin('pager');
       if ($pager) {
-        return $pager->use_pager();
+        return $pager->usePager();
       }
     }
     return FALSE;
@@ -878,7 +878,7 @@ abstract class DisplayPluginBase extends PluginBase {
           if (empty($this->view->query)) {
             $this->view->initQuery();
           }
-          $aggregate = $this->view->query->get_aggregation_info();
+          $aggregate = $this->view->query->getAggregationInfo();
           if (!empty($aggregate[$info['group_type']]['handler'][$type])) {
             $override = $aggregate[$info['group_type']]['handler'][$type];
           }
@@ -916,7 +916,7 @@ abstract class DisplayPluginBase extends PluginBase {
    *
    * @param bool $groupable_only
    *   (optional) TRUE to only return an array of field labels from handlers
-   *   that support the use_string_group_by method, defaults to FALSE.
+   *   that support the useStringGroupBy method, defaults to FALSE.
    *
    * @return array
    *   An array of applicable field options, keyed by ID.
@@ -928,7 +928,7 @@ abstract class DisplayPluginBase extends PluginBase {
     }
 
     foreach ($this->getHandlers('field') as $id => $handler) {
-      if ($groupable_only && !$handler->use_string_group_by()) {
+      if ($groupable_only && !$handler->useStringGroupBy()) {
         // Continue to next handler if it's not groupable.
         continue;
       }
@@ -992,7 +992,7 @@ abstract class DisplayPluginBase extends PluginBase {
   /**
    * Returns to tokens for arguments.
    *
-   * This function is similar to views_handler_field::get_render_tokens()
+   * This function is similar to views_handler_field::getRenderTokens()
    * but without fields tokens.
    */
   public function getArgumentsTokens() {
@@ -1191,7 +1191,7 @@ abstract class DisplayPluginBase extends PluginBase {
     }
 
     $this->view->initQuery();
-    if ($this->view->query->get_aggregation_info()) {
+    if ($this->view->query->getAggregationInfo()) {
       $options['group_by'] = array(
         'category' => 'other',
         'title' => t('Use aggregation'),
@@ -1778,7 +1778,7 @@ abstract class DisplayPluginBase extends PluginBase {
 
         // If there's a theme engine involved, we also need to know its extension
         // so we can give the proper filename.
-        $this->theme_extension = '.tpl.php';
+        $this->theme_extension = '.html.twig';
         if (isset($theme_engine)) {
           $extension_function = $theme_engine . '_extension';
           if (function_exists($extension_function)) {
@@ -2146,7 +2146,7 @@ abstract class DisplayPluginBase extends PluginBase {
     // Not sure I like this being here, but it seems (?) like a logical place.
     $cache_plugin = $this->getPlugin('cache');
     if ($cache_plugin) {
-      $cache_plugin->cache_flush();
+      $cache_plugin->cacheFlush();
     }
 
     $section = $form_state['section'];
@@ -2422,7 +2422,7 @@ abstract class DisplayPluginBase extends PluginBase {
    * Render the 'more' link
    */
   public function renderMoreLink() {
-    if ($this->usesMore() && ($this->useMoreAlways() || (!empty($this->view->pager) && $this->view->pager->has_more_records()))) {
+    if ($this->usesMore() && ($this->useMoreAlways() || (!empty($this->view->pager) && $this->view->pager->hasMoreRecords()))) {
       $path = $this->getPath();
 
       if ($this->getOption('link_display') == 'custom_url' && $override_path = $this->getOption('link_url')) {
@@ -2531,11 +2531,11 @@ abstract class DisplayPluginBase extends PluginBase {
     $this->view->initHandlers();
     if ($this->usesExposed()) {
       $exposed_form = $this->getPlugin('exposed_form');
-      $exposed_form->pre_execute();
+      $exposed_form->preExecute();
     }
 
     foreach ($this->extender as $extender) {
-      $extender->pre_execute();
+      $extender->preExecute();
     }
 
     $this->view->setShowAdminLinks($this->getOption('show_admin_links'));
@@ -2704,7 +2704,7 @@ abstract class DisplayPluginBase extends PluginBase {
 
     if ($this->usesExposed() && $this->getOption('exposed_block')) {
       $exposed_form = $this->getPlugin('exposed_form');
-      return $exposed_form->render_exposed_form(TRUE);
+      return $exposed_form->renderExposedForm(TRUE);
     }
   }
 

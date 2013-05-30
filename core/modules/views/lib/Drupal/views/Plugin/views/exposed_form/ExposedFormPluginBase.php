@@ -115,7 +115,7 @@ abstract class ExposedFormPluginBase extends PluginBase {
    * also assign data to the appropriate handlers for use in building the
    * query.
    */
-  function render_exposed_form($block = FALSE) {
+  public function renderExposedForm($block = FALSE) {
     // Deal with any exposed filters we may have, before building.
     $form_state = array(
       'view' => &$this->view,
@@ -178,7 +178,7 @@ abstract class ExposedFormPluginBase extends PluginBase {
 
   function post_render(&$output) { }
 
-  function pre_execute() { }
+  public function preExecute() { }
 
   public function postExecute() { }
 
@@ -271,12 +271,12 @@ abstract class ExposedFormPluginBase extends PluginBase {
   *   Nested array of keys to exclude of insert into
   *   $view->exposed_raw_input
   */
-  function exposed_form_submit(&$form, &$form_state, &$exclude) {
+  public function exposedFormSubmit(&$form, &$form_state, &$exclude) {
     if (!empty($form_state['values']['op']) && $form_state['values']['op'] == $this->options['reset_button_label']) {
       $this->reset_form($form, $form_state);
     }
     if (isset($form_state['pager_plugin'])) {
-      $form_state['pager_plugin']->exposed_form_submit($form, $form_state, $exclude);
+      $form_state['pager_plugin']->exposedFormSubmit($form, $form_state, $exclude);
       $exclude[] = 'pager_plugin';
     }
   }

@@ -126,14 +126,14 @@ abstract class PagerPluginBase extends PluginBase {
    *
    * If NULL, we do not yet know what the total number of items are.
    */
-  function get_total_items() {
+  public function getTotalItems() {
     return $this->total_items;
   }
 
   /**
    * Get the pager id, if it exists
    */
-  function get_pager_id() {
+  public function getPagerId() {
     return isset($this->options['id']) ? $this->options['id'] : 0;
   }
 
@@ -160,7 +160,7 @@ abstract class PagerPluginBase extends PluginBase {
    *
    * Only a couple of very specific pagers will set this to false.
    */
-  function use_pager() {
+  public function usePager() {
     return TRUE;
   }
 
@@ -177,7 +177,7 @@ abstract class PagerPluginBase extends PluginBase {
    * Execute the count query, which will be done just prior to the query
    * itself being executed.
    */
-  function execute_count_query(&$count_query) {
+  public function executeCountQuery(&$count_query) {
     $this->total_items = $count_query->execute()->fetchField();
     if (!empty($this->options['offset'])) {
       $this->total_items -= $this->options['offset'];
@@ -205,7 +205,7 @@ abstract class PagerPluginBase extends PluginBase {
   /**
    * Perform any needed actions just prior to the query executing.
    */
-  function pre_execute(&$query) { }
+  public function preExecute(&$query) { }
 
   /**
    * Perform any needed actions just after the query executing.
@@ -234,7 +234,7 @@ abstract class PagerPluginBase extends PluginBase {
    *
    * This is primarily used to control the display of a more link.
    */
-  function has_more_records() {
+  public function hasMoreRecords() {
     return $this->get_items_per_page()
       && $this->total_items > (intval($this->current_page) + 1) * $this->get_items_per_page();
   }
@@ -243,13 +243,13 @@ abstract class PagerPluginBase extends PluginBase {
 
   function exposed_form_validate(&$form, &$form_state) { }
 
-  function exposed_form_submit(&$form, &$form_state, &$exclude) { }
+  public function exposedFormSubmit(&$form, &$form_state, &$exclude) { }
 
   function uses_exposed() {
     return FALSE;
   }
 
-  function items_per_page_exposed() {
+  protected function itemsPerPageExposed() {
     return FALSE;
   }
 

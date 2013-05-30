@@ -525,7 +525,7 @@ class ViewExecutable {
    */
   public function usePager() {
     if (!empty($this->pager)) {
-      return $this->pager->use_pager();
+      return $this->pager->usePager();
     }
   }
 
@@ -726,7 +726,7 @@ class ViewExecutable {
     if (!isset($this->pager)) {
       $this->pager = $this->display_handler->getPlugin('pager');
 
-      if ($this->pager->use_pager()) {
+      if ($this->pager->usePager()) {
         $this->pager->set_current_page($this->current_page);
       }
 
@@ -746,7 +746,7 @@ class ViewExecutable {
    * Render the pager, if necessary.
    */
   public function renderPager($exposed_input) {
-    if (!empty($this->pager) && $this->pager->use_pager()) {
+    if (!empty($this->pager) && $this->pager->usePager()) {
       return $this->pager->render($exposed_input);
     }
 
@@ -855,7 +855,7 @@ class ViewExecutable {
       $arg = isset($this->args[$position]) ? $this->args[$position] : NULL;
       $argument->position = $position;
 
-      if (isset($arg) || $argument->has_default_argument()) {
+      if (isset($arg) || $argument->hasDefaultArgument()) {
         if (!isset($arg)) {
           $arg = $argument->get_default_argument();
           // make sure default args get put back.
@@ -867,7 +867,7 @@ class ViewExecutable {
         }
 
         // Set the argument, which will also validate that the argument can be set.
-        if (!$argument->set_argument($arg)) {
+        if (!$argument->setArgument($arg)) {
           $status = $argument->validateFail($arg);
           break;
         }
@@ -876,7 +876,7 @@ class ViewExecutable {
           $arg_title = $argument->exception_title();
         }
         else {
-          $arg_title = $argument->get_title();
+          $arg_title = $argument->getTitle();
           $argument->query($this->display_handler->useGroupBy());
         }
 
@@ -886,7 +886,7 @@ class ViewExecutable {
 
         // Since we're really generating the breadcrumb for the item above us,
         // check the default action of this argument.
-        if ($this->display_handler->usesBreadcrumb() && $argument->uses_breadcrumb()) {
+        if ($this->display_handler->usesBreadcrumb() && $argument->usesBreadcrumb()) {
           $path = $this->getUrl($breadcrumb_args);
           if (strpos($path, '%') === FALSE) {
             if (!empty($argument->options['breadcrumb_enable']) && !empty($argument->options['breadcrumb'])) {
@@ -997,7 +997,7 @@ class ViewExecutable {
 
     if ($this->display_handler->usesExposed()) {
       $exposed_form = $this->display_handler->getPlugin('exposed_form');
-      $this->exposed_widgets = $exposed_form->render_exposed_form();
+      $this->exposed_widgets = $exposed_form->renderExposedForm();
       if (form_set_error() || !empty($this->build_info['abort'])) {
         $this->built = TRUE;
         // Don't execute the query, but rendering will still be executed to display the empty text.
@@ -1013,7 +1013,7 @@ class ViewExecutable {
     if (!empty($this->filter)) {
       $filter_groups = $this->display_handler->getOption('filter_groups');
       if ($filter_groups) {
-        $this->query->set_group_operator($filter_groups['operator']);
+        $this->query->setGroupOperator($filter_groups['operator']);
         foreach ($filter_groups['groups'] as $id => $operator) {
           $this->query->set_where_group($operator, $id);
         }
@@ -1071,7 +1071,7 @@ class ViewExecutable {
     }
 
     if (config('views.settings')->get('sql_signature')) {
-      $this->query->add_signature($this);
+      $this->query->addSignature($this);
     }
 
     // Let modules modify the query just prior to finalizing it.
@@ -1111,14 +1111,14 @@ class ViewExecutable {
       if (!empty($handlers[$id]) && is_object($handlers[$id])) {
         $multiple_exposed_input = array(0 => NULL);
         if ($handlers[$id]->multipleExposedInput()) {
-          $multiple_exposed_input = $handlers[$id]->group_multiple_exposed_input($this->exposed_data);
+          $multiple_exposed_input = $handlers[$id]->groupMultipleExposedInput($this->exposed_data);
         }
         foreach ($multiple_exposed_input as $group_id) {
           // Give this handler access to the exposed filter input.
           if (!empty($this->exposed_data)) {
             $converted = FALSE;
             if ($handlers[$id]->isAGroup()) {
-              $converted = $handlers[$id]->convert_exposed_input($this->exposed_data, $group_id);
+              $converted = $handlers[$id]->convertExposedInput($this->exposed_data, $group_id);
               $handlers[$id]->store_group_input($this->exposed_data, $converted);
               if (!$converted) {
                 continue;
@@ -1176,7 +1176,7 @@ class ViewExecutable {
       $cache = $this->display_handler->getPlugin('cache');
     }
     if ($cache->cache_get('results')) {
-      if ($this->pager->use_pager()) {
+      if ($this->pager->usePager()) {
         $this->pager->total_items = $this->total_rows;
         $this->pager->update_page_info();
       }
@@ -1529,7 +1529,7 @@ class ViewExecutable {
 
     // Allow substitutions from the first row.
     if ($this->initStyle()) {
-      $title = $this->style_plugin->tokenize_value($title, 0);
+      $title = $this->style_plugin->tokenizeValue($title, 0);
     }
     return $title;
   }

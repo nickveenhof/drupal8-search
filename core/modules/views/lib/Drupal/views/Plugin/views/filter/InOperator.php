@@ -53,7 +53,7 @@ class InOperator extends FilterPluginBase {
    * @return
    *   Return the stored values in $this->value_options if someone expects it.
    */
-  function get_value_options() {
+  public function getValueOptions() {
     if (isset($this->value_options)) {
       return;
     }
@@ -144,7 +144,7 @@ class InOperator extends FilterPluginBase {
   /**
    * Build strings from the operators() for 'select' options
    */
-  function operator_options($which = 'title') {
+  public function operatorOptions($which = 'title') {
     $options = array();
     foreach ($this->operators() as $id => $info) {
       $options[$id] = $info[$which];
@@ -173,7 +173,7 @@ class InOperator extends FilterPluginBase {
       $options = array('all' => t('Select all'));
     }
 
-    $this->get_value_options();
+    $this->getValueOptions();
     $options += $this->value_options;
     $default_value = (array) $this->value;
 
@@ -193,7 +193,7 @@ class InOperator extends FilterPluginBase {
       }
 
       if (!empty($this->options['expose']['reduce'])) {
-        $options = $this->reduce_value_options();
+        $options = $this->reduceValueOptions();
 
         if (!empty($this->options['expose']['multiple']) && empty($this->options['expose']['required'])) {
           $default_value = array();
@@ -247,7 +247,7 @@ class InOperator extends FilterPluginBase {
   /**
    * When using exposed filters, we may be required to reduce the set.
    */
-  function reduce_value_options($input = NULL) {
+  public function reduceValueOptions($input = NULL) {
     if (!isset($input)) {
       $input = $this->value_options;
     }
@@ -258,7 +258,7 @@ class InOperator extends FilterPluginBase {
     $options = array();
     foreach ($input as $id => $option) {
       if (is_array($option)) {
-        $options[$id] = $this->reduce_value_options($option);
+        $options[$id] = $this->reduceValueOptions($option);
         continue;
       }
       elseif (is_object($option)) {
@@ -316,7 +316,7 @@ class InOperator extends FilterPluginBase {
     }
     $info = $this->operators();
 
-    $this->get_value_options();
+    $this->getValueOptions();
 
     if (!is_array($this->value)) {
       return;
@@ -400,7 +400,7 @@ class InOperator extends FilterPluginBase {
   }
 
   public function validate() {
-    $this->get_value_options();
+    $this->getValueOptions();
     $errors = array();
 
     // If the operator is an operator which doesn't require a value, there is

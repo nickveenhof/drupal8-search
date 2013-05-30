@@ -54,7 +54,7 @@ class Text extends AreaPluginBase {
     $format = isset($this->options['format']) ? $this->options['format'] : filter_default_format();
     if (!$empty || !empty($this->options['empty'])) {
       return array(
-        '#markup' => $this->render_textarea($this->options['content'], $format),
+        '#markup' => $this->renderTextarea($this->options['content'], $format),
       );
     }
 
@@ -64,10 +64,10 @@ class Text extends AreaPluginBase {
   /**
    * Render a text area, using the proper format.
    */
-  function render_textarea($value, $format) {
+  public function renderTextarea($value, $format) {
     if ($value) {
       if ($this->options['tokenize']) {
-        $value = $this->view->style_plugin->tokenize_value($value, 0);
+        $value = $this->view->style_plugin->tokenizeValue($value, 0);
       }
       return check_markup($this->globalTokenReplace($value), $format, '', FALSE);
     }

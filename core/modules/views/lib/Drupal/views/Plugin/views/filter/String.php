@@ -41,13 +41,13 @@ class String extends FilterPluginBase {
       '=' => array(
         'title' => t('Is equal to'),
         'short' => t('='),
-        'method' => 'op_equal',
+        'method' => 'opEqual',
         'values' => 1,
       ),
       '!=' => array(
         'title' => t('Is not equal to'),
         'short' => t('!='),
-        'method' => 'op_equal',
+        'method' => 'opEqual',
         'values' => 1,
       ),
       'contains' => array(
@@ -146,7 +146,7 @@ class String extends FilterPluginBase {
   /**
    * Build strings from the operators() for 'select' options
    */
-  function operator_options($which = 'title') {
+  public function operatorOptions($which = 'title') {
     $options = array();
     foreach ($this->operators() as $id => $info) {
       $options[$id] = $info[$which];
@@ -163,7 +163,7 @@ class String extends FilterPluginBase {
       return t('exposed');
     }
 
-    $options = $this->operator_options('short');
+    $options = $this->operatorOptions('short');
     $output = '';
     if (!empty($options[$this->operator])) {
       $output = check_plain($options[$this->operator]);
@@ -260,7 +260,7 @@ class String extends FilterPluginBase {
     }
   }
 
-  function op_equal($field) {
+  public function opEqual($field) {
     $this->query->add_where($this->options['group'], $field, $this->value, $this->operator());
   }
 

@@ -98,11 +98,11 @@ class Rss extends StylePluginBase {
    * @return string
    *   The string containing the description with the tokens replaced.
    */
-  function get_description() {
+  public function getDescription() {
     $description = $this->options['description'];
 
     // Allow substitutions from the first row.
-    $description = $this->tokenize_value($description, 0);
+    $description = $this->tokenizeValue($description, 0);
 
     return $description;
   }

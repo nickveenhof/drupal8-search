@@ -182,11 +182,11 @@ abstract class StylePluginBase extends PluginBase {
   /**
    * Return the token replaced row class for the specified row.
    */
-  function get_row_class($row_index) {
+  public function getRowClass($row_index) {
     if ($this->usesRowClass()) {
       $class = $this->options['row_class'];
       if ($this->usesFields() && $this->view->field) {
-        $class = strip_tags($this->tokenize_value($class, $row_index));
+        $class = strip_tags($this->tokenizeValue($class, $row_index));
       }
 
       $classes = explode(' ', $class);
@@ -200,7 +200,7 @@ abstract class StylePluginBase extends PluginBase {
   /**
    * Take a value and apply token replacement logic to it.
    */
-  function tokenize_value($value, $row_index) {
+  public function tokenizeValue($value, $row_index) {
     if (strpos($value, '[') !== FALSE || strpos($value, '!') !== FALSE || strpos($value, '%') !== FALSE) {
       $fake_item = array(
         'alter_text' => TRUE,
@@ -359,7 +359,7 @@ abstract class StylePluginBase extends PluginBase {
    * @param string $type
    *    The display type, either block or page.
    */
-  function wizard_form(&$form, &$form_state, $type) {
+  public function wizardForm(&$form, &$form_state, $type) {
   }
 
   /**
@@ -432,7 +432,7 @@ abstract class StylePluginBase extends PluginBase {
     }
 
     // Group the rows according to the grouping instructions, if specified.
-    $sets = $this->render_grouping(
+    $sets = $this->renderGrouping(
       $this->view->result,
       $this->options['grouping'],
       TRUE
@@ -531,7 +531,7 @@ abstract class StylePluginBase extends PluginBase {
    *   )
    *   @endcode
    */
-  function render_grouping($records, $groupings = array(), $group_rendered = NULL) {
+  public function renderGrouping($records, $groupings = array(), $group_rendered = NULL) {
     // This is for backward compability, when $groupings was a string containing
     // the ID of a single field.
     if (is_string($groupings)) {
@@ -569,7 +569,7 @@ abstract class StylePluginBase extends PluginBase {
               }
             }
             else {
-              $grouping = $this->get_field_value($index, $field);
+              $grouping = $this->getFieldValue($index, $field);
               // Not all field handlers return a scalar value,
               // e.g. views_handler_field_field.
               if (!is_scalar($grouping)) {
@@ -638,7 +638,7 @@ abstract class StylePluginBase extends PluginBase {
             $this->rendered_fields[$count][$id] = $this->view->field[$id]->theme($row);
           }
 
-          $this->row_tokens[$count] = $this->view->field[$id]->get_render_tokens(array());
+          $this->row_tokens[$count] = $this->view->field[$id]->getRenderTokens(array());
         }
       }
       unset($this->view->row_index);
@@ -674,7 +674,7 @@ abstract class StylePluginBase extends PluginBase {
   * @param $field
   *    The id of the field.
   */
-  function get_field_value($index, $field) {
+  protected function getFieldValue($index, $field) {
     $this->view->row_index = $index;
     $value = $this->view->field[$field]->get_value($this->view->result[$index]);
     unset($this->view->row_index);

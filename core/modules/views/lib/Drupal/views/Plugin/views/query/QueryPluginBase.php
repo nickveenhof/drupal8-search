@@ -79,14 +79,14 @@ abstract class QueryPluginBase extends PluginBase implements QueryInterface {
    * @param view $view
    *   The view which is executed.
    */
-  function add_signature(ViewExecutable $view) { }
+  public function addSignature(ViewExecutable $view) { }
 
   /**
    * Get aggregation info for group by queries.
    *
    * If NULL, aggregation is not allowed.
    */
-  function get_aggregation_info() { }
+  public function getAggregationInfo() { }
 
   public function validateOptionsForm(&$form, &$form_state) { }
 
@@ -99,7 +99,7 @@ abstract class QueryPluginBase extends PluginBase implements QueryInterface {
   /**
    * Set a LIMIT on the query, specifying a maximum number of results.
    */
-  function set_limit($limit) {
+  public function setLimit($limit) {
     $this->limit = $limit;
   }
 
@@ -154,7 +154,7 @@ abstract class QueryPluginBase extends PluginBase implements QueryInterface {
    * @param $type
    *   Either 'AND' or 'OR'
    */
-  function set_group_operator($type = 'AND') {
+  public function setGroupOperator($type = 'AND') {
     $this->group_operator = strtoupper($type);
   }
 

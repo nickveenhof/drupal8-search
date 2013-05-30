@@ -63,7 +63,7 @@ class None extends PagerPluginBase {
     );
   }
 
-  function use_pager() {
+  public function usePager() {
     return FALSE;
   }
 
@@ -75,7 +75,7 @@ class None extends PagerPluginBase {
     return 0;
   }
 
-  function execute_count_query(&$count_query) {
+  public function executeCountQuery(&$count_query) {
     // If we are displaying all items, never count. But we can update the count in post_execute.
   }
 

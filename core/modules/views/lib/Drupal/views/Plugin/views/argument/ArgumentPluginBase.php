@@ -91,7 +91,7 @@ abstract class ArgumentPluginBase extends HandlerBase {
    *
    * @return TRUE/FALSE
    */
-  function uses_breadcrumb() {
+  public function usesBreadcrumb() {
     $info = $this->default_actions($this->options['default_action']);
     return !empty($info['breadcrumb']);
   }
@@ -106,7 +106,7 @@ abstract class ArgumentPluginBase extends HandlerBase {
   function exception_title() {
     // If title overriding is off for the exception, return the normal title.
     if (empty($this->options['exception']['title_enable'])) {
-      return $this->get_title();
+      return $this->getTitle();
     }
     return $this->options['exception']['title'];
   }
@@ -324,7 +324,7 @@ abstract class ArgumentPluginBase extends HandlerBase {
 
       // If we decide this validator is ok, add it to the list.
       if ($valid) {
-        $plugin = $this->get_plugin('argument_validator', $id);
+        $plugin = $this->getPlugin('argument_validator', $id);
         if ($plugin) {
           if ($plugin->access() || $this->options['validate']['type'] == $id) {
             $form['validate']['options'][$id] = array(
@@ -373,20 +373,20 @@ abstract class ArgumentPluginBase extends HandlerBase {
 
     // Let the plugins do validation.
     $default_id = $form_state['values']['options']['default_argument_type'];
-    $plugin = $this->get_plugin('argument_default', $default_id);
+    $plugin = $this->getPlugin('argument_default', $default_id);
     if ($plugin) {
       $plugin->validateOptionsForm($form['argument_default'][$default_id], $form_state, $form_state['values']['options']['argument_default'][$default_id]);
     }
 
     // summary plugin
     $summary_id = $form_state['values']['options']['summary']['format'];
-    $plugin = $this->get_plugin('style', $summary_id);
+    $plugin = $this->getPlugin('style', $summary_id);
     if ($plugin) {
       $plugin->validateOptionsForm($form['summary']['options'][$summary_id], $form_state, $form_state['values']['options']['summary']['options'][$summary_id]);
     }
 
     $validate_id = $form_state['values']['options']['validate']['type'];
-    $plugin = $this->get_plugin('argument_validator', $validate_id);
+    $plugin = $this->getPlugin('argument_validator', $validate_id);
     if ($plugin) {
       $plugin->validateOptionsForm($form['validate']['options'][$default_id], $form_state, $form_state['values']['options']['validate']['options'][$validate_id]);
     }
@@ -400,7 +400,7 @@ abstract class ArgumentPluginBase extends HandlerBase {
 
     // Let the plugins make submit modifications if necessary.
     $default_id = $form_state['values']['options']['default_argument_type'];
-    $plugin = $this->get_plugin('argument_default', $default_id);
+    $plugin = $this->getPlugin('argument_default', $default_id);
     if ($plugin) {
       $options = &$form_state['values']['options']['argument_default'][$default_id];
       $plugin->submitOptionsForm($form['argument_default'][$default_id], $form_state, $options);
@@ -410,7 +410,7 @@ abstract class ArgumentPluginBase extends HandlerBase {
 
     // summary plugin
     $summary_id = $form_state['values']['options']['summary']['format'];
-    $plugin = $this->get_plugin('style', $summary_id);
+    $plugin = $this->getPlugin('style', $summary_id);
     if ($plugin) {
       $options = &$form_state['values']['options']['summary']['options'][$summary_id];
       $plugin->submitOptionsForm($form['summary']['options'][$summary_id], $form_state, $options);
@@ -419,7 +419,7 @@ abstract class ArgumentPluginBase extends HandlerBase {
     }
 
     $validate_id = $form_state['values']['options']['validate']['type'];
-    $plugin = $this->get_plugin('argument_validator', $validate_id);
+    $plugin = $this->getPlugin('argument_validator', $validate_id);
     if ($plugin) {
       $options = &$form_state['values']['options']['validate']['options'][$validate_id];
       $plugin->submitOptionsForm($form['validate']['options'][$validate_id], $form_state, $options);
@@ -444,13 +444,13 @@ abstract class ArgumentPluginBase extends HandlerBase {
     $defaults = array(
       'ignore' => array(
         'title' => t('Display all results for the specified field'),
-        'method' => 'default_ignore',
+        'method' => 'defaultIgnore',
         'breadcrumb' => TRUE, // generate a breadcrumb to here
       ),
       'default' => array(
         'title' => t('Provide default value'),
         'method' => 'default_default',
-        'form method' => 'default_argument_form',
+        'form method' => 'defaultArgumentForm',
         'has default argument' => TRUE,
         'default only' => TRUE, // this can only be used for missing argument, not validation failure
         'breadcrumb' => TRUE, // generate a breadcrumb to here
@@ -463,18 +463,18 @@ abstract class ArgumentPluginBase extends HandlerBase {
       'summary' => array(
         'title' => t('Display a summary'),
         'method' => 'default_summary',
-        'form method' => 'default_summary_form',
+        'form method' => 'defaultSummaryForm',
         'style plugin' => TRUE,
         'breadcrumb' => TRUE, // generate a breadcrumb to here
       ),
       'empty' => array(
         'title' => t('Display contents of "No results found"'),
-        'method' => 'default_empty',
+        'method' => 'defaultEmpty',
         'breadcrumb' => TRUE, // generate a breadcrumb to here
       ),
       'access denied' => array(
         'title' => t('Display "Access Denied"'),
-        'method' => 'default_access_denied',
+        'method' => 'defaultAccessDenied',
         'breadcrumb' => FALSE, // generate a breadcrumb to here
       ),
     );
@@ -497,7 +497,7 @@ abstract class ArgumentPluginBase extends HandlerBase {
    * Provide a form for selecting the default argument when the
    * default action is set to provide default argument.
    */
-  function default_argument_form(&$form, &$form_state) {
+  public function defaultArgumentForm(&$form, &$form_state) {
     $plugins = Views::pluginManager('argument_default')->getDefinitions();
     $options = array();
 
@@ -529,7 +529,7 @@ abstract class ArgumentPluginBase extends HandlerBase {
       if (!empty($info['no_ui'])) {
         continue;
       }
-      $plugin = $this->get_plugin('argument_default', $id);
+      $plugin = $this->getPlugin('argument_default', $id);
       if ($plugin) {
         if ($plugin->access() || $this->options['default_argument_type'] == $id) {
           $form['argument_default']['#argument_option'] = 'default';
@@ -562,7 +562,7 @@ abstract class ArgumentPluginBase extends HandlerBase {
    * Provide a form for selecting further summary options when the
    * default action is set to display one.
    */
-  function default_summary_form(&$form, &$form_state) {
+  public function defaultSummaryForm(&$form, &$form_state) {
     $style_plugins = Views::pluginManager('style')->getDefinitions();
     $summary_plugins = array();
     $format_options = array();
@@ -594,7 +594,7 @@ abstract class ArgumentPluginBase extends HandlerBase {
       '#title' => t('Sort by'),
       '#default_value' => $this->options['summary']['number_of_records'],
       '#options' => array(
-        0 => $this->get_sort_name(),
+        0 => $this->getSortName(),
         1 => t('Number of records')
       ),
       '#states' => array(
@@ -617,7 +617,7 @@ abstract class ArgumentPluginBase extends HandlerBase {
     );
 
     foreach ($summary_plugins as $id => $info) {
-      $plugin = $this->get_plugin('style', $id);
+      $plugin = $this->getPlugin('style', $id);
       if (!$plugin->usesOptions()) {
         continue;
       }
@@ -681,7 +681,7 @@ abstract class ArgumentPluginBase extends HandlerBase {
    * If an argument was expected and was not given, in this case, simply
    * ignore the argument entirely.
    */
-  function default_ignore() {
+  public function defaultIgnore() {
     return TRUE;
   }
 
@@ -703,7 +703,7 @@ abstract class ArgumentPluginBase extends HandlerBase {
    * If an argument was expected and was not given, in this case, report
    * the view as 'access denied'.
    */
-  function default_access_denied() {
+  public function defaultAccessDenied() {
     $this->view->build_info['denied'] = TRUE;
     return FALSE;
   }
@@ -714,7 +714,7 @@ abstract class ArgumentPluginBase extends HandlerBase {
    * If an argument was expected and was not given, in this case, display
    * the view's empty text
    */
-  function default_empty() {
+  public function defaultEmpty() {
     // We return with no query; this will force the empty text.
     $this->view->built = TRUE;
     $this->view->executed = TRUE;
@@ -733,7 +733,7 @@ abstract class ArgumentPluginBase extends HandlerBase {
   /**
    * Determine if the argument is set to provide a default argument.
    */
-  function has_default_argument() {
+  function hasDefaultArgument() {
     $info = $this->default_actions($this->options['default_action']);
     return !empty($info['has default argument']);
   }
@@ -742,7 +742,7 @@ abstract class ArgumentPluginBase extends HandlerBase {
    * Get a default argument, if available.
    */
   function get_default_argument() {
-    $plugin = $this->get_plugin('argument_default');
+    $plugin = $this->getPlugin('argument_default');
     if ($plugin) {
       return $plugin->get_argument();
     }
@@ -756,7 +756,7 @@ abstract class ArgumentPluginBase extends HandlerBase {
    */
   function process_summary_arguments(&$args) {
     if ($this->options['validate']['type'] != 'none') {
-      if (isset($this->validator) || $this->validator = $this->get_plugin('argument_validator')) {
+      if (isset($this->validator) || $this->validator = $this->getPlugin('argument_validator')) {
         $this->validator->process_summary_arguments($args);
       }
     }
@@ -779,11 +779,11 @@ abstract class ArgumentPluginBase extends HandlerBase {
 
     // Clear out the normal primary field and whatever else may have
     // been added and let the summary do the work.
-    $this->query->clear_fields();
+    $this->query->clearFields();
     $this->summary_query();
 
     $by = $this->options['summary']['number_of_records'] ? 'num_records' : NULL;
-    $this->summary_sort($this->options['summary']['sort_order'], $by);
+    $this->summarySort($this->options['summary']['sort_order'], $by);
 
     // Summaries have their own sorting and fields, so tell the View not
     // to build these.
@@ -809,7 +809,7 @@ abstract class ArgumentPluginBase extends HandlerBase {
     $this->base_alias = $this->query->add_field($this->tableAlias, $this->realField);
 
     $this->summary_name_field();
-    return $this->summary_basics();
+    return $this->summaryBasics();
   }
 
   /**
@@ -828,7 +828,7 @@ abstract class ArgumentPluginBase extends HandlerBase {
         if ($j) {
           $join = clone $j;
           $join->leftTable = $this->tableAlias;
-          $this->name_table_alias = $this->query->add_table($this->name_table, $this->relationship, $join);
+          $this->name_table_alias = $this->query->addTable($this->name_table, $this->relationship, $join);
         }
       }
       else {
@@ -851,7 +851,7 @@ abstract class ArgumentPluginBase extends HandlerBase {
    * Some basic summary behavior that doesn't need to be repeated as much as
    * code that goes into summary_query()
    */
-  function summary_basics($count_field = TRUE) {
+  public function summaryBasics($count_field = TRUE) {
     // Add the number of nodes counter
     $distinct = ($this->view->display_handler->getOption('distinct') && empty($this->query->no_distinct));
 
@@ -872,7 +872,7 @@ abstract class ArgumentPluginBase extends HandlerBase {
    * @param $order
    *   The order selected in the UI.
    */
-  function summary_sort($order, $by = NULL) {
+  public function summarySort($order, $by = NULL) {
     $this->query->add_orderby(NULL, NULL, $order, (!empty($by) ? $by : $this->name_alias));
   }
 
@@ -895,7 +895,7 @@ abstract class ArgumentPluginBase extends HandlerBase {
    * @param $data
    *   The query results for the row.
    */
-  function summary_name($data) {
+  public function summaryName($data) {
     $value = $data->{$this->name_alias};
     if (empty($value) && !empty($this->definition['empty field name'])) {
       $value = $this->definition['empty field name'];
@@ -926,7 +926,7 @@ abstract class ArgumentPluginBase extends HandlerBase {
    * Called by the view object to get the title. This may be set by a
    * validator so we don't necessarily call through to title().
    */
-  function get_title() {
+  public function getTitle() {
     if (isset($this->validated_title)) {
       return $this->validated_title;
     }
@@ -949,7 +949,7 @@ abstract class ArgumentPluginBase extends HandlerBase {
       return $this->argument_validated = TRUE;
     }
 
-    $plugin = $this->get_plugin('argument_validator');
+    $plugin = $this->getPlugin('argument_validator');
     return $this->argument_validated = $plugin->validate_argument($arg);
   }
 
@@ -983,7 +983,7 @@ abstract class ArgumentPluginBase extends HandlerBase {
    *
    * @return TRUE if it successfully validates; FALSE if it does not.
    */
-  function set_argument($arg) {
+  public function setArgument($arg) {
     $this->argument = $arg;
     return $this->validateArgument($arg);
   }
@@ -1014,14 +1014,14 @@ abstract class ArgumentPluginBase extends HandlerBase {
     // Clone ourselves so that we don't break things when we're really
     // processing the arguments.
     $argument = clone $this;
-    if (!isset($arg) && $argument->has_default_argument()) {
+    if (!isset($arg) && $argument->hasDefaultArgument()) {
       $arg = $argument->get_default_argument();
 
       // remember that this argument was computed, not passed on the URL.
       $this->is_default = TRUE;
     }
     // Set the argument, which will also validate that the argument can be set.
-    if ($argument->set_argument($arg)) {
+    if ($argument->setArgument($arg)) {
       $value = $argument->argument;
     }
     unset($argument);
@@ -1031,7 +1031,7 @@ abstract class ArgumentPluginBase extends HandlerBase {
   /**
    * Get the display or row plugin, if it exists.
    */
-  function get_plugin($type = 'argument_default', $name = NULL) {
+  public function getPlugin($type = 'argument_default', $name = NULL) {
     $options = array();
     switch ($type) {
       case 'argument_default':
@@ -1075,7 +1075,7 @@ abstract class ArgumentPluginBase extends HandlerBase {
    * Subclasses should override this to specify what the default sort order of
    * their argument is (e.g. alphabetical, numeric, date).
    */
-  function get_sort_name() {
+  public function getSortName() {
     return t('Default sort', array(), array('context' => 'Sort order'));
   }
 

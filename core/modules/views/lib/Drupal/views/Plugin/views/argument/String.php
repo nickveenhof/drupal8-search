@@ -161,13 +161,13 @@ class String extends ArgumentPluginBase {
     }
     else {
       // Add the field.
-      $formula = $this->get_formula();
+      $formula = $this->getFormula();
       $this->base_alias = $this->query->add_field(NULL, $formula, $this->field . '_truncated');
       $this->query->set_count_field(NULL, $formula, $this->field, $this->field . '_truncated');
     }
 
     $this->summary_name_field();
-    return $this->summary_basics(FALSE);
+    return $this->summaryBasics(FALSE);
   }
 
   /**
@@ -175,7 +175,7 @@ class String extends ArgumentPluginBase {
    *
    * $this->ensureMyTable() MUST have been called prior to this.
    */
-  function get_formula() {
+  public function getFormula() {
     return "SUBSTRING($this->tableAlias.$this->realField, 1, " . intval($this->options['limit']) . ")";
   }
 
@@ -212,7 +212,7 @@ class String extends ArgumentPluginBase {
     }
     else {
       $formula = TRUE;
-      $field = $this->get_formula();
+      $field = $this->getFormula();
     }
 
     if (count($this->value) > 1) {
@@ -249,7 +249,10 @@ class String extends ArgumentPluginBase {
     return $value;
   }
 
-  function get_sort_name() {
+  /**
+   * {@inheritdoc}
+   */
+  public function getSortName() {
     return t('Alphabetical', array(), array('context' => 'Sort order'));
   }
 
@@ -285,8 +288,8 @@ class String extends ArgumentPluginBase {
     return drupal_map_assoc($this->value, 'check_plain');
   }
 
-  function summary_name($data) {
-    return $this->caseTransform(parent::summary_name($data), $this->options['case']);
+  public function summaryName($data) {
+    return $this->caseTransform(parent::summaryName($data), $this->options['case']);
   }
 
 }

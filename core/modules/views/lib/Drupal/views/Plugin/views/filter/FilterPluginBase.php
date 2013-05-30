@@ -176,7 +176,7 @@ abstract class FilterPluginBase extends HandlerBase {
    * Only exposed filters with operators available can be converted into groups.
    */
   function can_build_group() {
-    return $this->isExposed() && (count($this->operator_options()) > 0);
+    return $this->isExposed() && (count($this->operatorOptions()) > 0);
   }
 
   /**
@@ -209,7 +209,7 @@ abstract class FilterPluginBase extends HandlerBase {
           '#markup' => '<div class="clearfix">',
         );
         // Render the build group form.
-        $this->show_build_group_form($form, $form_state);
+        $this->showBuildGroupForm($form, $form_state);
         $form['clear_markup_end'] = array(
           '#markup' => '</div>',
         );
@@ -217,7 +217,7 @@ abstract class FilterPluginBase extends HandlerBase {
     }
     else {
       // Add the subform from operator_form().
-      $this->show_operator_form($form, $form_state);
+      $this->showOperatorForm($form, $form_state);
       // Add the subform from value_form().
       $this->show_value_form($form, $form_state);
       $form['clear_markup_end'] = array(
@@ -251,7 +251,7 @@ abstract class FilterPluginBase extends HandlerBase {
     unset($form_state['values']['expose_button']); // don't store this.
     unset($form_state['values']['group_button']); // don't store this.
     if (!$this->isAGroup()) {
-      $this->operator_submit($form, $form_state);
+      $this->operatorSubmit($form, $form_state);
       $this->value_submit($form, $form_state);
     }
     if (!empty($this->options['exposed'])) {
@@ -265,7 +265,7 @@ abstract class FilterPluginBase extends HandlerBase {
   /**
    * Shortcut to display the operator form.
    */
-  function show_operator_form(&$form, &$form_state) {
+  public function showOperatorForm(&$form, &$form_state) {
     $this->operator_form($form, $form_state);
     $form['operator']['#prefix'] = '<div class="views-group-box views-left-30">';
     $form['operator']['#suffix'] = '</div>';
@@ -280,7 +280,7 @@ abstract class FilterPluginBase extends HandlerBase {
    * @see buildOptionsForm()
    */
   function operator_form(&$form, &$form_state) {
-    $options = $this->operator_options();
+    $options = $this->operatorOptions();
     if (!empty($options)) {
       $form['operator'] = array(
         '#type' => count($options) < 10 ? 'radios' : 'select',
@@ -295,7 +295,7 @@ abstract class FilterPluginBase extends HandlerBase {
    * Provide a list of options for the default operator form.
    * Should be overridden by classes that don't override operator_form
    */
-  function operator_options() { return array(); }
+  public function operatorOptions() { return array(); }
 
   /**
    * Validate the operator form.
@@ -306,7 +306,7 @@ abstract class FilterPluginBase extends HandlerBase {
    * Perform any necessary changes to the form values prior to storage.
    * There is no need for this function to actually store the data.
    */
-  function operator_submit($form, &$form_state) { }
+  public function operatorSubmit($form, &$form_state) { }
 
   /**
    * Shortcut to display the value form.
@@ -343,7 +343,7 @@ abstract class FilterPluginBase extends HandlerBase {
   /**
    * Shortcut to display the exposed options form.
    */
-  function show_build_group_form(&$form, &$form_state) {
+  public function showBuildGroupForm(&$form, &$form_state) {
     if (empty($this->options['is_grouped'])) {
       return;
     }
@@ -423,7 +423,7 @@ abstract class FilterPluginBase extends HandlerBase {
 
     // If necessary, set new defaults:
     if ($item['is_grouped']) {
-      $this->build_group_options();
+      $this->buildGroupOptions();
     }
 
     $form_state['view']->get('executable')->setItem($form_state['display_id'], $form_state['type'], $form_state['id'], $item);
@@ -714,7 +714,7 @@ abstract class FilterPluginBase extends HandlerBase {
    /**
    * Provide default options for exposed filters.
    */
-  function build_group_options() {
+  protected function buildGroupOptions() {
     $this->options['group_info'] = array(
       'label' => $this->definition['title'],
       'description' => NULL,
@@ -794,7 +794,7 @@ abstract class FilterPluginBase extends HandlerBase {
         unset($form[$operator]['#title']);
       }
 
-      $this->exposed_translate($form[$operator], 'operator');
+      $this->exposedTranslate($form[$operator], 'operator');
 
       unset($form['operator']);
     }
@@ -809,7 +809,7 @@ abstract class FilterPluginBase extends HandlerBase {
         unset($form[$value]['#title']);
       }
 
-      $this->exposed_translate($form[$value], 'value');
+      $this->exposedTranslate($form[$value], 'value');
 
       if (!empty($form['#type']) && ($form['#type'] == 'checkboxes' || ($form['#type'] == 'select' && !empty($form['#multiple'])))) {
         unset($form[$value]['#default_value']);
@@ -1106,7 +1106,7 @@ abstract class FilterPluginBase extends HandlerBase {
    * Make some translations to a form item to make it more suitable to
    * exposing.
    */
-  function exposed_translate(&$form, $type) {
+  protected function exposedTranslate(&$form, $type) {
     if (!isset($form['#type'])) {
       return;
     }
@@ -1130,7 +1130,7 @@ abstract class FilterPluginBase extends HandlerBase {
 
     // Cleanup in case the translated element's (radios or checkboxes) display value contains html.
     if ($form['#type'] == 'select') {
-      $this->prepare_filter_select_options($form['#options']);
+      $this->prepareFilterSelectOptions($form['#options']);
     }
 
     if ($type == 'value' && empty($this->always_required) && empty($this->options['expose']['required']) && $form['#type'] == 'select' && empty($form['#multiple'])) {
@@ -1151,16 +1151,16 @@ abstract class FilterPluginBase extends HandlerBase {
    *
    * The function is recursive to support optgroups.
    */
-  function prepare_filter_select_options(&$options) {
+  protected function prepareFilterSelectOptions(&$options) {
     foreach ($options as $value => $label) {
       // Recurse for optgroups.
       if (is_array($label)) {
-        $this->prepare_filter_select_options($options[$value]);
+        $this->prepareFilterSelectOptions($options[$value]);
       }
       // FAPI has some special value to allow hierarchy.
       // @see _form_options_flatten
       elseif (is_object($label)) {
-        $this->prepare_filter_select_options($options[$value]->option);
+        $this->prepareFilterSelectOptions($options[$value]->option);
       }
       else {
         $options[$value] = strip_tags(decode_entities($label));
@@ -1213,7 +1213,7 @@ abstract class FilterPluginBase extends HandlerBase {
    * checkboxes widget, and this function will be called for each item
    * choosed in the checkboxes.
    */
-  function convert_exposed_input(&$input, $selected_group_id = NULL) {
+  public function convertExposedInput(&$input, $selected_group_id = NULL) {
     if ($this->isAGroup()) {
       // If it is already defined the selected group, use it. Only valid
       // when the filter uses checkboxes for widget.
@@ -1252,7 +1252,7 @@ abstract class FilterPluginBase extends HandlerBase {
    * as widget, and therefore has to be applied several times, one per
    * item selected.
    */
-  function group_multiple_exposed_input(&$input) {
+  public function groupMultipleExposedInput(&$input) {
     if (!empty($input[$this->options['group_info']['identifier']])) {
     return array_filter($input[$this->options['group_info']['identifier']]);
     }
@@ -1429,7 +1429,7 @@ abstract class FilterPluginBase extends HandlerBase {
    *
    * @return bool
    */
-   function can_group() {
+   public function canGroup() {
      return TRUE;
    }
 

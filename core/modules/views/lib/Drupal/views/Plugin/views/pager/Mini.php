@@ -62,7 +62,7 @@ class Mini extends SqlBase {
       // there is another page.
       $limit = $this->view->query->getLimit();
       $limit += 1;
-      $this->view->query->set_limit($limit);
+      $this->view->query->setLimit($limit);
     }
   }
 
@@ -82,8 +82,9 @@ class Mini extends SqlBase {
     if (count($result) > $this->get_items_per_page()) {
       array_pop($result);
       // Make sure the pager shows the next link by setting the total items to
-      // the biggest possible number.
-      pager_default_initialize(PHP_INT_MAX, $this->get_items_per_page(), $this->options['id']);
+      // the biggest possible number but prevent failing calculations like
+      // ceil(PHP_INT_MAX) we take PHP_INT_MAX / 2.
+      pager_default_initialize(PHP_INT_MAX / 2, $this->get_items_per_page(), $this->options['id']);
     }
   }
 
