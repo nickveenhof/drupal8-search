@@ -11,6 +11,8 @@ use Drupal\Component\Plugin\PluginBase;
 use Drupal\search\SearchExecuteInterface;
 use Drupal\search\Annotation\SearchExecutePlugin;
 
+use Symfony\Component\DependencyInjection\ContainerInterface;
+
 /**
  * Executes a keyword search aginst the search index.
  *
@@ -54,6 +56,11 @@ class SearchExtraSearchExecute extends PluginBase implements SearchExecuteInterf
     }
     $this->keywords = (string) $this->configuration['keywords'];
   }
+
+  static public function create(ContainerInterface $container, array $configuration, $plugin_id, array $plugin_definition) {
+    return new static($configuration, $plugin_id, $plugin_definition);
+  }
+
   /**
    * Verifies if the given parameters are valid enough to execute a search for.
    *

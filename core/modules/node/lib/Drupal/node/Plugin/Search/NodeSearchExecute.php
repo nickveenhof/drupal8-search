@@ -8,6 +8,8 @@
 namespace Drupal\node\Plugin\Search;
 
 use Drupal\Component\Plugin\ContextAwarePluginBase;
+use Drupal\Core\Database\Query\SelectExtender;
+use Drupal\Core\Database\Query\SelectInterface;
 use Drupal\search\SearchExecuteInterface;
 use Drupal\search\Annotation\SearchExecutePlugin;
 
@@ -66,7 +68,8 @@ class NodeSearchExecute extends ContextAwarePluginBase implements SearchExecuteI
     }
     $keys = $this->configuration['keywords'];
     // Build matching conditions
-    $query = $this->getContextValue('database')->select('search_index', 'i', array('target' => 'slave'))
+    $query = $this->getContextValue('database')
+      ->select('search_index', 'i', array('target' => 'slave'))
       ->extend('Drupal\search\SearchQuery')
       ->extend('Drupal\Core\Database\Query\PagerSelectExtender');
     $query->join('node_field_data', 'n', 'n.nid = i.sid');
@@ -111,15 +114,15 @@ class NodeSearchExecute extends ContextAwarePluginBase implements SearchExecuteI
       $node->rendered = drupal_render($build);
 
       // Fetch comments for snippet.
-      $node->rendered .= ' ' . $module_handler->invoke('comment', 'node_update_index', $node, $item->langcode);
+      $node->rendered .= ' ' . $module_handler->invoke('comment', 'node_update_index', array($node, $item->langcode));
 
-      $extra = $module_handler->invokeAll('node_search_result', $node, $item->langcode);
+      $extra = $module_handler->invokeAll('node_search_result', array($node, $item->langcode));
 
-      $language = $module_handler->invoke('language', 'load', $item->langcode);
+      $language = $module_handler->invoke('language', 'load', array($item->langcode));
       $uri = $node->uri();
       $results[] = array(
         'link' => url($uri['path'], array_merge($uri['options'], array('absolute' => TRUE, 'language' => $language))),
-        'type' => check_plain($module_handler->invoke('node', 'get_type_label', $node)),
+        'type' => check_plain($module_handler->invoke('node', 'get_type_label', array($node))),
         'title' => $node->label($item->langcode),
         'user' => theme('username', array('account' => $node)),
         'date' => $node->changed,
