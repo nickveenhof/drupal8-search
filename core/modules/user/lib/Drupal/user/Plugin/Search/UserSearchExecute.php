@@ -7,6 +7,7 @@
 
 namespace Drupal\user\Plugin\Search;
 
+use Drupal\Component\Plugin\ContextAwarePluginBase;
 use Drupal\search\SearchExecuteInterface;
 use Drupal\search\Annotation\SearchExecutePlugin;
 
@@ -37,6 +38,9 @@ class UserSearchExecute extends ContextAwarePluginBase implements SearchExecuteI
 
 
   static public function create(ContainerInterface $container, array $configuration, $plugin_id, array $plugin_definition) {
+    if (empty($configuration['context'])) {
+      $configuration['context'] = array();
+    }
     if (empty($configuration['context']['plugin.manager.entity'])) {
       $configuration['context']['plugin.manager.entity'] = $container->get('plugin.manager.entity');
     }

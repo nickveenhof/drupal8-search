@@ -39,6 +39,9 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class NodeSearchExecute extends ContextAwarePluginBase implements SearchExecuteInterface {
 
   static public function create(ContainerInterface $container, array $configuration, $plugin_id, array $plugin_definition) {
+    if (empty($configuration['context'])) {
+      $configuration['context'] = array();
+    }
     if (empty($configuration['context']['plugin.manager.entity'])) {
       $configuration['context']['plugin.manager.entity'] = $container->get('plugin.manager.entity');
     }
