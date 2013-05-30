@@ -38,6 +38,8 @@ class SearchExecutePlugin extends \Drupal\Component\Annotation\Plugin {
   /**
    * The title for the search page tab.
    *
+   * @ingroup plugin_translatable
+   *
    * @var string
    */
   public $title;
