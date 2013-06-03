@@ -7,7 +7,7 @@
 
 namespace Drupal\user\Plugin\Search;
 
-use Drupal\Component\Plugin\ContextAwarePluginBase;
+use Drupal\Component\Plugin\PluginBase;
 use Drupal\search\SearchExecuteInterface;
 use Drupal\search\Annotation\SearchExecutePlugin;
 
@@ -20,44 +20,37 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *   id = "user_search_execute",
  *   title = "Users",
  *   path = "user",
- *   module = "user",
- *   context = {
- *     "plugin.manager.entity" = {
- *       "class" = "\Drupal\Core\Entity\EntityManager"
- *     },
- *     "database" = {
- *       "class" = "\Drupal\Core\Database\Connection"
- *     },
- *     "module_handler" = {
- *       "class" = "\Drupal\Core\Extension\ModuleHandlerInterface"
- *     }
- *   }
+ *   module = "user"
  * )
  */
-class UserSearchExecute extends ContextAwarePluginBase implements SearchExecuteInterface {
-
+class UserSearchExecute extends PluginBase implements SearchExecuteInterface {
+  protected $database;
+  protected $entity_manager;
+  protected $module_handler;
+  protected $keywords;
 
   static public function create(ContainerInterface $container, array $configuration, $plugin_id, array $plugin_definition) {
-    if (empty($configuration['context'])) {
-      $configuration['context'] = array();
-    }
-    if (empty($configuration['context']['plugin.manager.entity'])) {
-      $configuration['context']['plugin.manager.entity'] = $container->get('plugin.manager.entity');
-    }
-    if (empty($configuration['context']['database'])) {
-      $configuration['context']['database'] = $container->get('database');
-    }
-    if (empty($configuration['context']['module_handler'])) {
-      $configuration['context']['module_handler'] = $container->get('module_handler');
-    }
-    return new static($configuration, $plugin_id, $plugin_definition);
+    $database = $container->get('database');
+    $entity_manager = $container->get('plugin.manager.entity');
+    $module_handler = $container->get('module_handler');
+    return new static($database, $entity_manager, $module_handler, $configuration, $plugin_id, $plugin_definition);
+  }
+
+  public function __construct(Connection $database, EntityManager $entity_manager, ModuleHandlerInterface $module_handler, array $configuration, $plugin_id, array $plugin_definition) {
+    $this->configuration = $configuration;
+    $this->pluginId = $plugin_id;
+    $this->pluginDefinition = $plugin_definition;
+    $this->database = $database;
+    $this->entity_manager = $entity_manager;
+    $this->module_handler = $module_handler;
+    $this->keywords = (string) $this->configuration['keywords'];
   }
 
   /**
    * {@inheritdoc}
    */
   public function isSearchExecutable() {
-    return !empty($this->configuration['keywords']);
+    return !empty($this->keywords);
   }
 
   /**
@@ -68,11 +61,12 @@ class UserSearchExecute extends ContextAwarePluginBase implements SearchExecuteI
     if (!$this->isSearchExecutable()) {
       return $results;
     }
-    $keys = $this->configuration['keywords'];
+    $keys = $this->keywords;
     $find = array();
     // Replace wildcards with MySQL/PostgreSQL wildcards.
     $keys = preg_replace('!\*+!', '%', $keys);
-    $query = db_select('users')
+    $query = $this->database
+      ->select('users')
       ->extend('Drupal\Core\Database\Query\PagerSelectExtender');
     $query->fields('users', array('uid'));
     if (user_access('administer users')) {
@@ -93,7 +87,9 @@ class UserSearchExecute extends ContextAwarePluginBase implements SearchExecuteI
       ->limit(15)
       ->execute()
       ->fetchCol();
-    $accounts = user_load_multiple($uids);
+    $entity_manger = $this->entity_manager;
+    $user_storage = $entity_manger->getStorageController('user');
+    $accounts = $user_storage->load($uids);
 
     foreach ($accounts as $account) {
       $result = array(

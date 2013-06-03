@@ -28,7 +28,7 @@ class SearchExecutePluginManager extends PluginManagerBase {
    *   keyed by the corresponding namespace to look for plugin implementations.
    * @param ContainerInterface $container A ContainerInterface instance.
    */
-  public function __construct(\Traversable $namespaces, ContainerInterface $container) {
+  public function __construct(\Traversable $namespaces) {
     $annotation_namespaces = array('Drupal\search\Annotation' => $namespaces['Drupal\search']);
     $this->discovery = new AnnotatedClassDiscovery('Search', $namespaces, $annotation_namespaces, 'Drupal\search\Annotation\SearchExecutePlugin');
     $this->discovery = new AlterDecorator($this->discovery, 'search_info');

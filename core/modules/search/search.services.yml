@@ -1,4 +1,4 @@
 services:
   plugin.manager.search.execute:
     class: Drupal\search\SearchExecutePluginManager
-    arguments: ['@container.namespaces', '@service_container']
+    arguments: ['@container.namespaces']

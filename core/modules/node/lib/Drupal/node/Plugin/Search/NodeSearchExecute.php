@@ -7,9 +7,12 @@
 
 namespace Drupal\node\Plugin\Search;
 
-use Drupal\Component\Plugin\ContextAwarePluginBase;
+use Drupal\Component\Plugin\PluginBase;
+use Drupal\Core\Database\Connection;
 use Drupal\Core\Database\Query\SelectExtender;
 use Drupal\Core\Database\Query\SelectInterface;
+use Drupal\Core\Entity\EntityManager;
+use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\search\SearchExecuteInterface;
 use Drupal\search\Annotation\SearchExecutePlugin;
 
@@ -22,43 +25,37 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *   id = "node_search_execute",
  *   title = "Content",
  *   path = "node",
- *   module = "node",
- *   context = {
- *     "plugin.manager.entity" = {
- *       "class" = "\Drupal\Core\Entity\EntityManager"
- *     },
- *     "database" = {
- *       "class" = "\Drupal\Core\Database\Connection"
- *     },
- *     "module_handler" = {
- *       "class" = "\Drupal\Core\Extension\ModuleHandlerInterface"
- *     }
- *   }
+ *   module = "node"
  * )
  */
-class NodeSearchExecute extends ContextAwarePluginBase implements SearchExecuteInterface {
+class NodeSearchExecute extends PluginBase implements SearchExecuteInterface {
+  protected $database;
+  protected $entity_manager;
+  protected $module_handler;
+  protected $keywords;
 
   static public function create(ContainerInterface $container, array $configuration, $plugin_id, array $plugin_definition) {
-    if (empty($configuration['context'])) {
-      $configuration['context'] = array();
-    }
-    if (empty($configuration['context']['plugin.manager.entity'])) {
-      $configuration['context']['plugin.manager.entity'] = $container->get('plugin.manager.entity');
-    }
-    if (empty($configuration['context']['database'])) {
-      $configuration['context']['database'] = $container->get('database');
-    }
-    if (empty($configuration['context']['module_handler'])) {
-      $configuration['context']['module_handler'] = $container->get('module_handler');
-    }
-    return new static($configuration, $plugin_id, $plugin_definition);
+    $database = $container->get('database');
+    $entity_manager = $container->get('plugin.manager.entity');
+    $module_handler = $container->get('module_handler');
+    return new static($database, $entity_manager, $module_handler, $configuration, $plugin_id, $plugin_definition);
+  }
+
+  public function __construct(Connection $database, EntityManager $entity_manager, ModuleHandlerInterface $module_handler, array $configuration, $plugin_id, array $plugin_definition) {
+    $this->configuration = $configuration;
+    $this->pluginId = $plugin_id;
+    $this->pluginDefinition = $plugin_definition;
+    $this->database = $database;
+    $this->entity_manager = $entity_manager;
+    $this->module_handler = $module_handler;
+    $this->keywords = (string) $this->configuration['keywords'];
   }
 
   /**
    * {@inheritdoc}
    */
   public function isSearchExecutable() {
-    return !empty($this->configuration['keywords']);
+    return !empty($this->keywords);
   }
 
   /**
@@ -69,9 +66,9 @@ class NodeSearchExecute extends ContextAwarePluginBase implements SearchExecuteI
     if (!$this->isSearchExecutable()) {
       return $results;
     }
-    $keys = $this->configuration['keywords'];
+    $keys = $this->keywords;
     // Build matching conditions
-    $query = $this->getContextValue('database')
+    $query = $this->database
       ->select('search_index', 'i', array('target' => 'slave'))
       ->extend('Drupal\search\SearchQuery')
       ->extend('Drupal\Core\Database\Query\PagerSelectExtender');
@@ -103,10 +100,10 @@ class NodeSearchExecute extends ContextAwarePluginBase implements SearchExecuteI
       ->limit(10)
       ->execute();
 
-    $entity_manger = $this->getContextValue('plugin.manager.entity');
+    $entity_manger = $this->entity_manager;
     $node_storage = $entity_manger->getStorageController('node');
     $node_render = $entity_manger->getRenderController('node');
-    $module_handler = $this->getContextValue('module_handler');
+    $module_handler = $this->module_handler;
 
     foreach ($find as $item) {
       // Render the node.
