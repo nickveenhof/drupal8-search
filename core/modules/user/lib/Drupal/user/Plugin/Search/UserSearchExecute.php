@@ -8,7 +8,11 @@
 namespace Drupal\user\Plugin\Search;
 
 use Drupal\Component\Plugin\PluginBase;
+use Drupal\Core\Database\Connection;
+use Drupal\Core\Entity\EntityManager;
+use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\search\SearchExecuteInterface;
+
 use Drupal\search\Annotation\SearchExecutePlugin;
 
 use Symfony\Component\DependencyInjection\ContainerInterface;
