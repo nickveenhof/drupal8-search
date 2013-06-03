@@ -143,7 +143,7 @@ class NodeSearchExecute extends PluginBase implements SearchExecuteInterface {
    *   A query object that has been extended with the Search DB Extender.
    */
   protected function addNodeRankings(SelectExtender $query) {
-    if ($ranking = $this->getContextValue('module_handler')->invokeAll('ranking')) {
+    if ($ranking = $this->module_handler->invokeAll('ranking')) {
       $tables = &$query->getTables();
       foreach ($ranking as $rank => $values) {
         if ($node_rank = variable_get('node_rank_' . $rank, 0)) {
