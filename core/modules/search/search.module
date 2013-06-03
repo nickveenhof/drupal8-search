@@ -233,7 +233,7 @@ function search_is_active() {
  *   have been set to active on the search settings page will be returned.
  *
  * @return
- *   Array of plugin.manager.search.page definitions, keyed by module name. The
+ *   Array of plugin.manager.search.execute definitions, keyed by module name. The
  *   'title' and 'path' array elements will be set to defaults for each module
  *   if not supplied by hook_search_info(), and an additional array element of
  *   'module' will be added (set to the module name).
@@ -243,7 +243,7 @@ function search_get_info($all = FALSE) {
 
   if (!isset($search_plugins)) {
     $search_info = array();
-    $search_definitions = Drupal::service('plugin.manager.search.page')->getDefinitions();
+    $search_definitions = Drupal::service('plugin.manager.search.execute')->getDefinitions();
     foreach ($search_definitions as $plugin_id => $plugin) {
       $module = $plugin['module'];
       $search_info[$module] = $plugin;

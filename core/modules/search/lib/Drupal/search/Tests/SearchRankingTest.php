@@ -100,7 +100,7 @@ class SearchRankingTest extends SearchTestBase {
       $config = array(
         'keywords' => 'rocks',
       );
-      $plugin = \Drupal::service('plugin.manager.search.page')->createInstance('node_search_execute', $config);
+      $plugin = \Drupal::service('plugin.manager.search.execute')->createInstance('node_search_execute', $config);
       // Do the search and assert the results.
       $set = $plugin->execute();
       $this->assertEqual($set[0]['node']->nid, $nodes[$node_rank][1]->nid, 'Search ranking "' . $node_rank . '" order.');
@@ -157,7 +157,12 @@ class SearchRankingTest extends SearchTestBase {
     foreach ($node_ranks as $node_rank) {
       variable_set('node_rank_' . $node_rank, 0);
     }
-    $set = node_search_execute('rocks');
+    $config = array(
+      'keywords' => 'rocks',
+    );
+    $plugin = \Drupal::service('plugin.manager.search.execute')->createInstance('node_search_execute', $config);
+    // Do the search and assert the results.
+    $set = $plugin->execute();
 
     // Test the ranking of each tag.
     foreach ($sorted_tags as $tag_rank => $tag) {
@@ -181,8 +186,12 @@ class SearchRankingTest extends SearchTestBase {
 
       // Refresh variables after the treatment.
       $this->refreshVariables();
-
-      $set = node_search_execute('rocks');
+      $config = array(
+        'keywords' => 'rocks',
+      );
+      $plugin = \Drupal::service('plugin.manager.search.execute')->createInstance('node_search_execute', $config);
+      // Do the search and assert the results.
+      $set = $plugin->execute();
 
       // Ranking should always be second to last.
       $set = array_slice($set, -2, 1);
@@ -230,7 +239,12 @@ class SearchRankingTest extends SearchTestBase {
     }
 
     // Do the search and assert the results.
-    $set = node_search_execute('rocks');
+    $config = array(
+      'keywords' => 'rocks',
+    );
+    $plugin = \Drupal::service('plugin.manager.search.execute')->createInstance('node_search_execute', $config);
+    // Do the search and assert the results.
+    $set = $plugin->execute();
     $this->assertEqual($set[0]['node']->nid, $node->nid, 'Search double ranking order.');
   }
 }

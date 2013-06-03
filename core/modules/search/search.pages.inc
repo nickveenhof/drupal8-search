@@ -49,7 +49,7 @@ function search_view($plugin_id = NULL, $module = NULL, $keys = '') {
     'query_parameters' => $request->query->all(),
     'request_attributes' => $request->attributes->all(),
   );
-  $plugin = Drupal::service('plugin.manager.search.page')->createInstance($plugin_id, $config);
+  $plugin = Drupal::service('plugin.manager.search.execute')->createInstance($plugin_id, $config);
   // Default results output is an empty string.
   $results = array('#markup' => '');
   // Process the search form. Note that if there is $_POST data,

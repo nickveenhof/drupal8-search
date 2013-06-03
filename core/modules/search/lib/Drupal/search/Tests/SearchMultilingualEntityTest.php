@@ -124,7 +124,7 @@ class SearchMultilingualEntityTest extends SearchTestBase {
       $config = array(
         'keywords' => $body_language_variant[0]['value'],
       );
-      $plugin = \Drupal::service('plugin.manager.search.page')->createInstance('node_search_execute', $config);
+      $plugin = \Drupal::service('plugin.manager.search.execute')->createInstance('node_search_execute', $config);
       // Do the search and assert the results.
       $search_result = $plugin->execute();
       // See whether we get the same node as a result.
