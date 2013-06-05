@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Contains \Drupal\search\SearchExecutePluginManager.
+ * Contains \Drupal\search\SearchPluginManager.
  */
 
 namespace Drupal\search;
@@ -18,7 +18,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 /**
  * SearchExecute plugin manager.
  */
-class SearchExecutePluginManager extends PluginManagerBase {
+class SearchPluginManager extends PluginManagerBase {
 
   /**
    * Overrides \Drupal\Component\Plugin\PluginManagerBase::__construct().
@@ -30,25 +30,12 @@ class SearchExecutePluginManager extends PluginManagerBase {
    */
   public function __construct(\Traversable $namespaces) {
     $annotation_namespaces = array('Drupal\search\Annotation' => $namespaces['Drupal\search']);
-    $this->discovery = new AnnotatedClassDiscovery('Search', $namespaces, $annotation_namespaces, 'Drupal\search\Annotation\SearchExecutePlugin');
+    $this->discovery = new AnnotatedClassDiscovery('Search', $namespaces, $annotation_namespaces, 'Drupal\search\Annotation\SearchPlugin');
     $this->discovery = new AlterDecorator($this->discovery, 'search_info');
     $this->discovery = new CacheDecorator($this->discovery, 'search');
 
     // By using ContainerFactory, we call a static create() method on each
     // plugin.
     $this->factory = new ContainerFactory($this->discovery);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function createInstance($plugin_id, array $configuration = array()) {
-    // Normalize the data
-    $configuration += array(
-      'keywords' => '',
-      'query_parameters' => array(),
-      'request_attributes' => array(),
-    );
-    return $this->factory->createInstance($plugin_id, $configuration);
   }
 }

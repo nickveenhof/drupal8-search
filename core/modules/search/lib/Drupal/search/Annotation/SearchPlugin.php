@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Contains \Drupal\search\Annotation\SearchExecutePlugin.
+ * Contains \Drupal\search\Annotation\SearchPlugin.
  */
 
 namespace Drupal\search\Annotation;
@@ -12,7 +12,7 @@ namespace Drupal\search\Annotation;
  *
  * @Annotation
  */
-class SearchExecutePlugin extends \Drupal\Component\Annotation\Plugin {
+class SearchPlugin extends \Drupal\Component\Annotation\Plugin {
 
   /**
    * The ID.

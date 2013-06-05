@@ -2,28 +2,28 @@
 
 /**
  * @file
- * Contains \Drupal\search_extra_type\Plugin\Search\SearchExtraSearchExecute.
+ * Contains \Drupal\search_extra_type\Plugin\Search\SearchExtraTypeSearch.
  */
 
 namespace Drupal\search_extra_type\Plugin\Search;
 
 use Drupal\Component\Plugin\PluginBase;
-use Drupal\search\SearchExecuteInterface;
-use Drupal\search\Annotation\SearchExecutePlugin;
+use Drupal\search\Plugin\SearchPluginBase;
+use Drupal\search\Annotation\SearchPlugin;
 
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Executes a keyword search aginst the search index.
  *
- * @SearchExecutePlugin(
- *   id = "search_extra_type_search_execute",
+ * @SearchPlugin(
+ *   id = "search_extra_type_search",
  *   title = "Dummy search type",
  *   path = "dummy_path",
  *   module = "search_extra_type"
  * )
  */
-class SearchExtraSearchExecute extends PluginBase implements SearchExecuteInterface {
+class SearchExtraTypeSearch extends SearchPluginBase {
 
   /**
    * The keywords to search for.

@@ -2,33 +2,31 @@
 
 /**
  * @file
- * Contains \Drupal\node\Plugin\Search\NodeSearchExecute.
+ * Contains \Drupal\node\Plugin\Search\NodeSearch.
  */
 
 namespace Drupal\node\Plugin\Search;
 
-use Drupal\Component\Plugin\PluginBase;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Database\Query\SelectExtender;
-use Drupal\Core\Database\Query\SelectInterface;
 use Drupal\Core\Entity\EntityManager;
 use Drupal\Core\Extension\ModuleHandlerInterface;
-use Drupal\search\SearchExecuteInterface;
-use Drupal\search\Annotation\SearchExecutePlugin;
+use Drupal\search\Plugin\SearchPluginBase;
+use Drupal\search\Annotation\SearchPlugin;
 
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Executes a keyword search aginst the search index.
  *
- * @SearchExecutePlugin(
- *   id = "node_search_execute",
+ * @SearchPlugin(
+ *   id = "node_search",
  *   title = "Content",
  *   path = "node",
  *   module = "node"
  * )
  */
-class NodeSearchExecute extends PluginBase implements SearchExecuteInterface {
+class NodeSearch extends SearchPluginBase {
   protected $database;
   protected $entity_manager;
   protected $module_handler;

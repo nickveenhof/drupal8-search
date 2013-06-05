@@ -43,13 +43,9 @@ function search_view($plugin_id = NULL, $module = NULL, $keys = '') {
     }
     drupal_goto($path);
   }
+  $plugin = Drupal::service('plugin.manager.search')->createInstance($plugin_id);
   $request = Drupal::request();
-  $config = array(
-    'keywords' => $keys,
-    'query_parameters' => $request->query->all(),
-    'request_attributes' => $request->attributes->all(),
-  );
-  $plugin = Drupal::service('plugin.manager.search.execute')->createInstance($plugin_id, $config);
+  $plugin->setSearch($keys, $request->query->all(), $request->attributes->all());
   // Default results output is an empty string.
   $results = array('#markup' => '');
   // Process the search form. Note that if there is $_POST data,

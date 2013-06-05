@@ -2,32 +2,31 @@
 
 /**
  * @file
- * Contains \Drupal\user\Plugin\Search\UserSearchExecute.
+ * Contains \Drupal\user\Plugin\Search\UserSearch.
  */
 
 namespace Drupal\user\Plugin\Search;
 
-use Drupal\Component\Plugin\PluginBase;
+
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Entity\EntityManager;
 use Drupal\Core\Extension\ModuleHandlerInterface;
-use Drupal\search\SearchExecuteInterface;
-
-use Drupal\search\Annotation\SearchExecutePlugin;
+use Drupal\search\Plugin\SearchPluginBase;
+use Drupal\search\Annotation\SearchPlugin;
 
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Executes a keyword search aginst the search index.
  *
- * @SearchExecutePlugin(
- *   id = "user_search_execute",
+ * @SearchPlugin(
+ *   id = "user_search",
  *   title = "Users",
  *   path = "user",
  *   module = "user"
  * )
  */
-class UserSearchExecute extends PluginBase implements SearchExecuteInterface {
+class UserSearch extends SearchPluginBase {
   protected $database;
   protected $entity_manager;
   protected $module_handler;
