@@ -52,13 +52,6 @@ class UserSearch extends SearchPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function isSearchExecutable() {
-    return !empty($this->keywords);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   public function execute() {
     $results = array();
     if (!$this->isSearchExecutable()) {

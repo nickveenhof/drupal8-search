@@ -7,10 +7,12 @@
 
 namespace Drupal\node\Plugin\Search;
 
+use Drupal\Core\Config\Config;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Database\Query\SelectExtender;
 use Drupal\Core\Entity\EntityManager;
 use Drupal\Core\Extension\ModuleHandlerInterface;
+use Drupal\Core\KeyValueStore\KeyValueStoreInterface;
 use Drupal\search\Plugin\SearchPluginBase;
 use Drupal\search\Annotation\SearchPlugin;
 
@@ -30,30 +32,27 @@ class NodeSearch extends SearchPluginBase {
   protected $database;
   protected $entity_manager;
   protected $module_handler;
-  protected $keywords;
+  protected $config_factory;
+  protected $state;
 
   static public function create(ContainerInterface $container, array $configuration, $plugin_id, array $plugin_definition) {
     $database = $container->get('database');
     $entity_manager = $container->get('plugin.manager.entity');
     $module_handler = $container->get('module_handler');
-    return new static($database, $entity_manager, $module_handler, $configuration, $plugin_id, $plugin_definition);
+    $config_factory = $container->get('config.factory');
+    $state = $container->get('keyvalue')->get('state');
+    return new static($database, $entity_manager, $module_handler, $config_factory, $state, $configuration, $plugin_id, $plugin_definition);
   }
 
-  public function __construct(Connection $database, EntityManager $entity_manager, ModuleHandlerInterface $module_handler, array $configuration, $plugin_id, array $plugin_definition) {
+  public function __construct(Connection $database, EntityManager $entity_manager, ModuleHandlerInterface $module_handler, Config $config_factory, KeyValueStoreInterface $state, array $configuration, $plugin_id, array $plugin_definition) {
     $this->configuration = $configuration;
     $this->pluginId = $plugin_id;
     $this->pluginDefinition = $plugin_definition;
     $this->database = $database;
     $this->entity_manager = $entity_manager;
     $this->module_handler = $module_handler;
-    $this->keywords = (string) $this->configuration['keywords'];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function isSearchExecutable() {
-    return !empty($this->keywords);
+    $this->config_factory = $config_factory;
+    $this->state = $state;
   }
 
   /**
@@ -98,9 +97,8 @@ class NodeSearch extends SearchPluginBase {
       ->limit(10)
       ->execute();
 
-    $entity_manger = $this->entity_manager;
-    $node_storage = $entity_manger->getStorageController('node');
-    $node_render = $entity_manger->getRenderController('node');
+    $node_storage = $this->entity_manger->getStorageController('node');
+    $node_render = $this->entity_manger->getRenderController('node');
     $module_handler = $this->module_handler;
 
     foreach ($find as $item) {
@@ -144,6 +142,7 @@ class NodeSearch extends SearchPluginBase {
     if ($ranking = $this->module_handler->invokeAll('ranking')) {
       $tables = &$query->getTables();
       foreach ($ranking as $rank => $values) {
+        // @todo - move rank out of drupal variables.
         if ($node_rank = variable_get('node_rank_' . $rank, 0)) {
           // If the table defined in the ranking isn't already joined, then add it.
           if (isset($values['join']) && !isset($tables[$values['join']['alias']])) {
@@ -155,5 +154,108 @@ class NodeSearch extends SearchPluginBase {
       }
     }
   }
+  /**
+   * {@inheritdoc}
+   */
+  public function updateIndex() {
+    $limit = (int) $this->config_factory('search.settings')->get('index.cron_limit');
 
+    $result = $this->database->queryRange("SELECT n.nid FROM {node} n LEFT JOIN {search_dataset} d ON d.type = 'node' AND d.sid = n.nid WHERE d.sid IS NULL OR d.reindex <> 0 ORDER BY d.reindex ASC, n.nid ASC", 0, $limit, array(), array('target' => 'slave'));
+    $nids = $result->fetchCol();
+    if (!$nids) {
+      return;
+    }
+
+    // The indexing throttle should be aware of the number of language variants
+    // of a node.
+    $counter = 0;
+    $node_storage = $this->entity_manger->getStorageController('node');
+    foreach ($node_storage->load($nids) as $node) {
+      // Determine when the maximum number of indexable items is reached.
+      $counter += count($node->getTranslationLanguages());
+      if ($counter > $limit) {
+        break;
+      }
+      $this->indexNode($node);
+    }
+  }
+
+  /**
+   * Indexes a single node.
+   *
+   * @param \Drupal\Core\Entity\EntityInterface $node
+   *   The node to index.
+   */
+  protected function indexNode(EntityInterface $node) {
+
+    // Save the changed time of the most recent indexed node, for the search
+    // results half-life calculation.
+    $this->state->set('node.cron_last', $node->changed);
+
+    $languages = $node->getTranslationLanguages();
+
+    foreach ($languages as $language) {
+      // Render the node.
+      $build = $this->module_handler->invoke('node', 'view', array($node, 'search_index', $language->langcode));
+
+      unset($build['#theme']);
+      $node->rendered = drupal_render($build);
+
+      $text = '<h1>' . check_plain($node->label($language->langcode)) . '</h1>' . $node->rendered;
+
+      // Fetch extra data normally not visible.
+      $extra = $this->module_handler->invokeAll('node_update_index', array($node, $language->langcode));
+      foreach ($extra as $t) {
+        $text .= $t;
+      }
+
+      // Update index.
+      $this->module_handler->invoke('search', 'index', array($node->nid, 'node', $text, $language->langcode));
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function resetIndex() {
+    $this->database->update('search_dataset')
+      ->fields(array('reindex' => REQUEST_TIME))
+      ->condition('type', 'node')
+      ->execute();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function indexStatus() {
+    $total = $this->database->query('SELECT COUNT(*) FROM {node}')->fetchField();
+    $remaining = $this->database->query("SELECT COUNT(*) FROM {node} n LEFT JOIN {search_dataset} d ON d.type = 'node' AND d.sid = n.nid WHERE d.sid IS NULL OR d.reindex <> 0")->fetchField();
+    return array('remaining' => $remaining, 'total' => $total);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function addToAdminForm(array &$form, array &$form_state) {
+    // Output form for defining rank factor weights.
+    $form['content_ranking'] = array(
+      '#type' => 'details',
+      '#title' => t('Content ranking'),
+    );
+    $form['content_ranking']['#theme'] = 'node_search_admin';
+    $form['content_ranking']['info'] = array(
+      '#value' => '<em>' . t('The following numbers control which properties the content search should favor when ordering the results. Higher numbers mean more influence, zero means the property is ignored. Changing these numbers does not require the search index to be rebuilt. Changes take effect immediately.') . '</em>'
+    );
+
+    // Note: reversed to reflect that higher number = higher ranking.
+    $options = drupal_map_assoc(range(0, 10));
+    foreach ($this->module_handler->invokeAll('ranking') as $var => $values) {
+      $form['content_ranking']['factors']['node_rank_' . $var] = array(
+        '#title' => $values['title'],
+        '#type' => 'select',
+        '#options' => $options,
+        '#default_value' => variable_get('node_rank_' . $var, 0),
+      );
+    }
+  }
 }

@@ -1060,34 +1060,6 @@ function search_box_form_submit($form, &$form_state) {
 }
 
 /**
- * Performs a search by calling hook_search_execute().
- *
- * @param $keys
- *   Keyword query to search on.
- * @param $module
- *   Search module to search.
- * @param $conditions
- *   Optional array of additional search conditions.
- *
- * @return
- *   Renderable array of search results. No return value if $keys are not
- *   supplied or if the given search module is not active.
- */
-function search_data(SearchExecuteInterface $plugin, $module) {
-    $results = $plugin->execute();
-    if (module_hook($module, 'search_page')) {
-      return module_invoke($module, 'search_page', $results);
-    }
-    else {
-      return array(
-        '#theme' => 'search_results',
-        '#results' => $results,
-        '#module' => $module,
-      );
-    }
-}
-
-/**
  * Returns snippets from a piece of text, with certain keywords highlighted.
  *
  * Used for formatting search results.

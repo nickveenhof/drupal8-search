@@ -52,12 +52,20 @@ interface SearchInterface {
   public function isSearchExecutable();
 
   /**
-   * Execute the search
+   * Execute the search.
    *
    * @return array $results
    *   A structured list of search results
    */
   public function execute();
+
+  /**
+   * Execute the search and build a render array.
+   *
+   * @return array $render
+   *   The search results in a renderable array.
+   */
+  public function buildResult();
 
   /**
    * Update the search index for this plugin.
@@ -103,9 +111,34 @@ interface SearchInterface {
    *  An associative array with the key-value pairs:
    *  - remaining: The number of items left to index.
    *  - total: The total number of items to index.
-   *
-   * @ingroup search
    */
   public function indexStatus();
-  
+
+  /**
+   * Add elements to the search settings form.
+   * 
+   * The core search module only invokes this method on active module plugins.
+   *
+   * @param $form
+   *   Nested array of form elements that comprise the form.
+   * @param $form_state
+   *   A keyed array containing the current state of the form. The arguments
+   *   that drupal_get_form() was originally called with are available in the
+   *   array $form_state['build_info']['args'].
+   */
+  public function addToAdminForm(array &$form, array &$form_state);
+
+  /**
+   * Handle any submission for elements on the search settings form.
+   * 
+   * The core search module only invokes this method on active module plugins.
+   *
+   * @param $form
+   *   Nested array of form elements that comprise the form.
+   * @param $form_state
+   *   A keyed array containing the current state of the form. The arguments
+   *   that drupal_get_form() was originally called with are available in the
+   *   array $form_state['build_info']['args'].
+   */
+  public function submitAdminForm(array &$form, array &$form_state);
 }

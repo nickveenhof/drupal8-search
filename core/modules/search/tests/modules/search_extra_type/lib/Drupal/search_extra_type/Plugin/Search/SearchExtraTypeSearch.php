@@ -7,7 +7,6 @@
 
 namespace Drupal\search_extra_type\Plugin\Search;
 
-use Drupal\Component\Plugin\PluginBase;
 use Drupal\search\Plugin\SearchPluginBase;
 use Drupal\search\Annotation\SearchPlugin;
 
@@ -26,49 +25,13 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class SearchExtraTypeSearch extends SearchPluginBase {
 
   /**
-   * The keywords to search for.
-   *
-   * @var string
-   */
-  protected $keywords;
-  protected $conditions = array();
-
-  /**
-   * Constructs a new SearchExecute object.
-   *
-   * @param string $keywords
-   *   The keywords to search for.
-   *
-   * @param array $query_parameters
-   *   Optional query parameters for the given search. Could be used to refine
-   *   the scope of the search.
-   *
-   * @param array $request_attributes
-   *   All the attributes that belong to executed request
-   *
-   */
-  public function __construct(array $configuration, $plugin_id, array $plugin_definition) {
-    $this->configuration = $configuration;
-    $this->pluginId = $plugin_id;
-    $this->pluginDefinition = $plugin_definition;
-    if (!empty($this->configuration['query_parameters']['search_conditions'])) {
-      $this->conditions['search_conditions'] = $this->configuration['query_parameters']['search_conditions'];
-    }
-    $this->keywords = (string) $this->configuration['keywords'];
-  }
-
-  static public function create(ContainerInterface $container, array $configuration, $plugin_id, array $plugin_definition) {
-    return new static($configuration, $plugin_id, $plugin_definition);
-  }
-
-  /**
    * Verifies if the given parameters are valid enough to execute a search for.
    *
    * @return boolean
    *   A true or false depending on the implementation.
    */
   public function isSearchExecutable() {
-    return (bool) ($this->keywords || $this->conditions);
+    return (bool) ($this->keywords || !empty($this->searchParams['search_conditions']));
   }
 
   /**

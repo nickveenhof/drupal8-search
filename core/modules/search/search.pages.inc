@@ -60,7 +60,7 @@ function search_view($plugin_id = NULL, $module = NULL, $keys = '') {
       watchdog('search', 'Searched %type for %keys.', array('%keys' => $keys, '%type' => $info['title']), WATCHDOG_NOTICE, l(t('results'), 'search/' . $info['path'] . '/' . $keys));
 
       // Collect the search results.
-      $results = search_data($plugin, $info['module']);
+      $results = $plugin->buildResult();
     }
   }
   // The form may be altered based on whether the search was run.
