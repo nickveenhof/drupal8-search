@@ -28,26 +28,28 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  */
 class UserSearch extends SearchPluginBase {
   protected $database;
-  protected $entity_manager;
-  protected $module_handler;
+  protected $entityManager;
+  protected $moduleHandler;
 
   /**
    * {@inheritdoc}
    */
   static public function create(ContainerInterface $container, array $configuration, $plugin_id, array $plugin_definition) {
-    $database = $container->get('database');
-    $entity_manager = $container->get('plugin.manager.entity');
-    $module_handler = $container->get('module_handler');
-    return new static($database, $entity_manager, $module_handler, $configuration, $plugin_id, $plugin_definition);
+    return new static(
+      $container->get('database'),
+      $container->get('plugin.manager.entity'),
+      $container->get('module_handler'),
+      $configuration,
+      $plugin_id,
+      $plugin_definition
+    );
   }
 
   public function __construct(Connection $database, EntityManager $entity_manager, ModuleHandlerInterface $module_handler, array $configuration, $plugin_id, array $plugin_definition) {
-    $this->configuration = $configuration;
-    $this->pluginId = $plugin_id;
-    $this->pluginDefinition = $plugin_definition;
     $this->database = $database;
-    $this->entity_manager = $entity_manager;
-    $this->module_handler = $module_handler;
+    $this->entityManager = $entity_manager;
+    $this->moduleHandler = $module_handler;
+    parent::__construct($configuration, $plugin_id, $plugin_definition);
   }
 
   /**
@@ -84,9 +86,7 @@ class UserSearch extends SearchPluginBase {
       ->limit(15)
       ->execute()
       ->fetchCol();
-    $entity_manger = $this->entity_manager;
-    $user_storage = $entity_manger->getStorageController('user');
-    $accounts = $user_storage->load($uids);
+    $accounts = $this->entityManager->getStorageController('user')->load($uids);
 
     foreach ($accounts as $account_ng) {
       $account = $account_ng->getBCEntity();

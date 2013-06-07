@@ -95,7 +95,7 @@ class SearchMultilingualEntityTest extends SearchTestBase {
     // Index only 4 items per cron run.
     config('search.settings')->set('index.cron_limit', 4)->save();
     // Update the index. This does the initial processing.
-    \Drupal::service('plugin.manager.search')->createInstance('node_search')->updateIndex();
+    $this->container->get('plugin.manager.search')->createInstance('node_search')->updateIndex();
     // Run the shutdown function. Testing is a unique case where indexing
     // and searching has to happen in the same request, so running the shutdown
     // function manually is needed to finish the indexing process.
@@ -114,17 +114,15 @@ class SearchMultilingualEntityTest extends SearchTestBase {
   function testSearchingMultilingualFieldValues() {
     // Update the index and then run the shutdown method.
     // See testIndexingThrottle() for further explanation.
-    \Drupal::service('plugin.manager.search')->createInstance('node_search')->updateIndex();
+    $plugin = $this->container->get('plugin.manager.search')->createInstance('node_search');
+    $plugin->updateIndex();
     search_update_totals();
     foreach ($this->searchable_nodes as $node) {
       // Each searchable node that we created contains values in the body field
       // in one or more languages. Let's pick the last language variant from the
       // body array and execute a search using that as a search keyword.
       $body_language_variant = end($node->body);
-      $config = array(
-        'keywords' => $body_language_variant[0]['value'],
-      );
-      $plugin = \Drupal::service('plugin.manager.search')->createInstance('node_search', $config);
+      $plugin->setSearch($body_language_variant[0]['value'], array(), array());
       // Do the search and assert the results.
       $search_result = $plugin->execute();
       // See whether we get the same node as a result.

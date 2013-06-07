@@ -29,7 +29,7 @@ class SearchAdvancedSearchFormTest extends SearchTestBase {
     $this->node = $this->drupalCreateNode();
 
     // First update the index. This does the initial processing.
-    \Drupal::service('plugin.manager.search')->createInstance('node_search')->updateIndex();
+    $this->container->get('plugin.manager.search')->createInstance('node_search')->updateIndex();
 
     // Then, run the shutdown function. Testing is a unique case where indexing
     // and searching has to happen in the same request, so running the shutdown

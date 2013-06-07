@@ -40,6 +40,7 @@ abstract class SearchPluginBase extends ContainerFactoryPluginBase implements Se
     $this->keywords = (string) $keywords;
     $this->searchParams = $params;
     $this->searchAttributes = $attributes;
+    return $this;
   }
 
   /**

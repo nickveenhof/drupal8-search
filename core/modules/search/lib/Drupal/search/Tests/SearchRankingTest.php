@@ -90,7 +90,7 @@ class SearchRankingTest extends SearchTestBase {
     for ($i = 0; $i < 5; $i ++) {
       $client->post($stats_path, array(), array('nid' => $nid))->send();
     }
-    $plugin = \Drupal::service('plugin.manager.search')->createInstance('node_search');
+    $plugin = $this->container->get('plugin.manager.search')->createInstance('node_search');
     $plugin->setSearch('rocks', array(), array());
     // Test each of the possible rankings.
     foreach ($node_ranks as $node_rank) {
@@ -154,7 +154,7 @@ class SearchRankingTest extends SearchTestBase {
     foreach ($node_ranks as $node_rank) {
       variable_set('node_rank_' . $node_rank, 0);
     }
-    $plugin = \Drupal::service('plugin.manager.search')->createInstance('node_search');
+    $plugin = $this->container->get('plugin.manager.search')->createInstance('node_search');
     $plugin->setSearch('rocks', array(), array());
     // Do the search and assert the results.
     $set = $plugin->execute();
@@ -181,7 +181,7 @@ class SearchRankingTest extends SearchTestBase {
 
       // Refresh variables after the treatment.
       $this->refreshVariables();
-      $plugin = \Drupal::service('plugin.manager.search')->createInstance('node_search');
+      $plugin = $this->container->get('plugin.manager.search')->createInstance('node_search');
       $plugin->setSearch('rocks', array(), array());
       // Do the search and assert the results.
       $set = $plugin->execute();
@@ -232,7 +232,7 @@ class SearchRankingTest extends SearchTestBase {
     }
 
     // Do the search and assert the results.
-    $plugin = \Drupal::service('plugin.manager.search')->createInstance('node_search');
+    $plugin = $this->container->get('plugin.manager.search')->createInstance('node_search');
     $plugin->setSearch('rocks', array(), array());
     // Do the search and assert the results.
     $set = $plugin->execute();

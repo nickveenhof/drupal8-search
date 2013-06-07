@@ -8,14 +8,14 @@
 namespace Drupal\search\Plugin;
 
 /**
- * Defines a common interface for all SearchExecute objects.
+ * Defines a common interface for all SearchPlugin objects.
  */
 interface SearchInterface {
   /**
    * Set the keywords, params, and attributes to be used by execute().
    *
-   * @return string
-   *   The keywords.
+   * @return \Drupal\ssearch\Plugin\SearchInterface
+   *   The object.
    */
   public function setSearch($keywords, array $params, array $attributes);
 
@@ -84,8 +84,6 @@ interface SearchInterface {
    * middle of your run, you should update your module's internal bookkeeping on
    * when items have last been indexed as you go rather than waiting to the end
    * of indexing.
-   *
-   * @ingroup search
    */
   public function updateIndex();
 
@@ -95,8 +93,6 @@ interface SearchInterface {
    * Modules that use updateIndex() should update their indexing
    * bookkeeping so that it starts from scratch the next time updateIndex()
    * is called.
-   *
-   * @ingroup search
    */
   public function resetIndex();
 

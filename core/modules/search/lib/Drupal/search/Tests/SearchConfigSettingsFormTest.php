@@ -49,7 +49,7 @@ class SearchConfigSettingsFormTest extends SearchTestBase {
     $edit[$body_key] = l($node->label(), 'node/' . $node->nid) . ' pizza sandwich';
     $this->drupalPost('node/' . $node->nid . '/edit', $edit, t('Save and keep published'));
 
-    \Drupal::service('plugin.manager.search')->createInstance('node_search')->updateIndex();
+    $this->container->get('plugin.manager.search')->createInstance('node_search')->updateIndex();
     search_update_totals();
 
     // Enable the search block.

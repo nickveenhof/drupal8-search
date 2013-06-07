@@ -7,7 +7,7 @@
 
 namespace Drupal\search_extra_type\Plugin\Search;
 
-use Drupal\Core\Config\ConfigFactory;
+use Drupal\Core\Config\Config;
 use Drupal\search\Plugin\SearchPluginBase;
 use Drupal\search\Annotation\SearchPlugin;
 
@@ -24,22 +24,23 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * )
  */
 class SearchExtraTypeSearch extends SearchPluginBase {
-  protected $config_factory;
-  protected $state;
+  protected $configSettings;
 
   /**
    * {@inheritdoc}
    */
   static public function create(ContainerInterface $container, array $configuration, $plugin_id, array $plugin_definition) {
-    $config_factory = $container->get('config.factory');
-    return new static($config_factory, $configuration, $plugin_id, $plugin_definition);
+    return new static(
+      $container->get('config.factory')->get('search_extra_type.settings'),
+      $configuration,
+      $plugin_id,
+      $plugin_definition
+    );
   }
 
-  public function __construct(ConfigFactory $config_factory, array $configuration, $plugin_id, array $plugin_definition) {
-    $this->configuration = $configuration;
-    $this->pluginId = $plugin_id;
-    $this->pluginDefinition = $plugin_definition;
-    $this->config_factory = $config_factory;
+  public function __construct(Config $config_settings, array $configuration, $plugin_id, array $plugin_definition) {
+    $this->configSettings = $config_settings;
+    parent::__construct($configuration, $plugin_id, $plugin_definition);
   }
 
   /**
@@ -123,7 +124,7 @@ class SearchExtraTypeSearch extends SearchPluginBase {
         'bi' => t('Bistromathic'),
         'ii' => t('Infinite Improbability'),
       ),
-      '#default_value' => $this->config_factory->get('search_extra_type.settings')->get('boost'),
+      '#default_value' => $this->configSettings->get('boost'),
     );
   }
 
@@ -131,7 +132,7 @@ class SearchExtraTypeSearch extends SearchPluginBase {
    * {@inheritdoc}
    */
   public function submitAdminForm(array &$form, array &$form_state) {
-    $this->config_factory->get('search_extra_type.settings')
+    $this->configSettings
       ->set('boost', $form_state['values']['extra_type_settings']['boost'])
       ->save();
   }

@@ -7,7 +7,7 @@
 
 namespace Drupal\node\Plugin\Search;
 
-use Drupal\Core\Config\ConfigFactory;
+use Drupal\Core\Config\Config;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Database\Query\SelectExtender;
 use Drupal\Core\Entity\EntityInterface;
@@ -31,32 +31,34 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  */
 class NodeSearch extends SearchPluginBase {
   protected $database;
-  protected $entity_manager;
-  protected $module_handler;
-  protected $config_factory;
+  protected $entityManager;
+  protected $moduleHandler;
+  protected $searchSettings;
   protected $state;
 
   /**
    * {@inheritdoc}
    */
   static public function create(ContainerInterface $container, array $configuration, $plugin_id, array $plugin_definition) {
-    $database = $container->get('database');
-    $entity_manager = $container->get('plugin.manager.entity');
-    $module_handler = $container->get('module_handler');
-    $config_factory = $container->get('config.factory');
-    $state = $container->get('keyvalue')->get('state');
-    return new static($database, $entity_manager, $module_handler, $config_factory, $state, $configuration, $plugin_id, $plugin_definition);
+    return new static(
+      $container->get('database'),
+      $container->get('plugin.manager.entity'),
+      $container->get('module_handler'),
+      $container->get('config.factory')->get('search.settings'),
+      $container->get('keyvalue')->get('state'),
+      $configuration,
+      $plugin_id,
+      $plugin_definition
+    );
   }
 
-  public function __construct(Connection $database, EntityManager $entity_manager, ModuleHandlerInterface $module_handler, ConfigFactory $config_factory, KeyValueStoreInterface $state, array $configuration, $plugin_id, array $plugin_definition) {
-    $this->configuration = $configuration;
-    $this->pluginId = $plugin_id;
-    $this->pluginDefinition = $plugin_definition;
+  public function __construct(Connection $database, EntityManager $entity_manager, ModuleHandlerInterface $module_handler, Config $search_settings, KeyValueStoreInterface $state, array $configuration, $plugin_id, array $plugin_definition) {
     $this->database = $database;
-    $this->entity_manager = $entity_manager;
-    $this->module_handler = $module_handler;
-    $this->config_factory = $config_factory;
+    $this->entityManager = $entity_manager;
+    $this->moduleHandler = $module_handler;
+    $this->searchSettings = $search_settings;
     $this->state = $state;
+    parent::__construct($configuration, $plugin_id, $plugin_definition);
   }
 
   /**
@@ -101,9 +103,8 @@ class NodeSearch extends SearchPluginBase {
       ->limit(10)
       ->execute();
 
-    $node_storage = $this->entity_manager->getStorageController('node');
-    $node_render = $this->entity_manager->getRenderController('node');
-    $module_handler = $this->module_handler;
+    $node_storage = $this->entityManager->getStorageController('node');
+    $node_render = $this->entityManager->getRenderController('node');
 
     foreach ($find as $item) {
       // Render the node.
@@ -114,15 +115,15 @@ class NodeSearch extends SearchPluginBase {
       $node->rendered = drupal_render($build);
 
       // Fetch comments for snippet.
-      $node->rendered .= ' ' . $module_handler->invoke('comment', 'node_update_index', array($node, $item->langcode));
+      $node->rendered .= ' ' . $this->moduleHandler->invoke('comment', 'node_update_index', array($node, $item->langcode));
 
-      $extra = $module_handler->invokeAll('node_search_result', array($node, $item->langcode));
+      $extra = $this->moduleHandler->invokeAll('node_search_result', array($node, $item->langcode));
 
-      $language = $module_handler->invoke('language', 'load', array($item->langcode));
+      $language = $this->moduleHandler->invoke('language', 'load', array($item->langcode));
       $uri = $node->uri();
       $results[] = array(
         'link' => url($uri['path'], array_merge($uri['options'], array('absolute' => TRUE, 'language' => $language))),
-        'type' => check_plain($module_handler->invoke('node', 'get_type_label', array($node))),
+        'type' => check_plain($this->moduleHandler->invoke('node', 'get_type_label', array($node))),
         'title' => $node->label($item->langcode),
         'user' => theme('username', array('account' => $node)),
         'date' => $node->changed,
@@ -143,7 +144,7 @@ class NodeSearch extends SearchPluginBase {
    *   A query object that has been extended with the Search DB Extender.
    */
   protected function addNodeRankings(SelectExtender $query) {
-    if ($ranking = $this->module_handler->invokeAll('ranking')) {
+    if ($ranking = $this->moduleHandler->invokeAll('ranking')) {
       $tables = &$query->getTables();
       foreach ($ranking as $rank => $values) {
         // @todo - move rank out of drupal variables.
@@ -162,7 +163,7 @@ class NodeSearch extends SearchPluginBase {
    * {@inheritdoc}
    */
   public function updateIndex() {
-    $limit = (int) $this->config_factory->get('search.settings')->get('index.cron_limit');
+    $limit = (int) $this->searchSettings->get('index.cron_limit');
 
     $result = $this->database->queryRange("SELECT n.nid FROM {node} n LEFT JOIN {search_dataset} d ON d.type = 'node' AND d.sid = n.nid WHERE d.sid IS NULL OR d.reindex <> 0 ORDER BY d.reindex ASC, n.nid ASC", 0, $limit, array(), array('target' => 'slave'));
     $nids = $result->fetchCol();
@@ -173,7 +174,7 @@ class NodeSearch extends SearchPluginBase {
     // The indexing throttle should be aware of the number of language variants
     // of a node.
     $counter = 0;
-    $node_storage = $this->entity_manager->getStorageController('node');
+    $node_storage = $this->entityManager->getStorageController('node');
     foreach ($node_storage->load($nids) as $node) {
       // Determine when the maximum number of indexable items is reached.
       $counter += count($node->getTranslationLanguages());
@@ -200,7 +201,7 @@ class NodeSearch extends SearchPluginBase {
 
     foreach ($languages as $language) {
       // Render the node.
-      $build = $this->module_handler->invoke('node', 'view', array($node, 'search_index', $language->langcode));
+      $build = $this->moduleHandler->invoke('node', 'view', array($node, 'search_index', $language->langcode));
 
       unset($build['#theme']);
       $node->rendered = drupal_render($build);
@@ -208,13 +209,13 @@ class NodeSearch extends SearchPluginBase {
       $text = '<h1>' . check_plain($node->label($language->langcode)) . '</h1>' . $node->rendered;
 
       // Fetch extra data normally not visible.
-      $extra = $this->module_handler->invokeAll('node_update_index', array($node, $language->langcode));
+      $extra = $this->moduleHandler->invokeAll('node_update_index', array($node, $language->langcode));
       foreach ($extra as $t) {
         $text .= $t;
       }
 
       // Update index.
-      $this->module_handler->invoke('search', 'index', array($node->nid, 'node', $text, $language->langcode));
+      $this->moduleHandler->invoke('search', 'index', array($node->nid, 'node', $text, $language->langcode));
     }
   }
 
@@ -253,7 +254,7 @@ class NodeSearch extends SearchPluginBase {
 
     // Note: reversed to reflect that higher number = higher ranking.
     $options = drupal_map_assoc(range(0, 10));
-    foreach ($this->module_handler->invokeAll('ranking') as $var => $values) {
+    foreach ($this->moduleHandler->invokeAll('ranking') as $var => $values) {
       $form['content_ranking']['factors']['node_rank_' . $var] = array(
         '#title' => $values['title'],
         '#type' => 'select',
