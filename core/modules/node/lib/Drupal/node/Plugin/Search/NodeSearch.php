@@ -7,7 +7,7 @@
 
 namespace Drupal\node\Plugin\Search;
 
-use Drupal\Core\Config\Config;
+use Drupal\Core\Config\ConfigFactory;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Database\Query\SelectExtender;
 use Drupal\Core\Entity\EntityManager;
@@ -45,7 +45,7 @@ class NodeSearch extends SearchPluginBase implements ContainerFactoryPluginInter
     return new static($database, $entity_manager, $module_handler, $config_factory, $state, $configuration, $plugin_id, $plugin_definition);
   }
 
-  public function __construct(Connection $database, EntityManager $entity_manager, ModuleHandlerInterface $module_handler, Config $config_factory, KeyValueStoreInterface $state, array $configuration, $plugin_id, array $plugin_definition) {
+  public function __construct(Connection $database, EntityManager $entity_manager, ModuleHandlerInterface $module_handler, ConfigFactory $config_factory, KeyValueStoreInterface $state, array $configuration, $plugin_id, array $plugin_definition) {
     $this->configuration = $configuration;
     $this->pluginId = $plugin_id;
     $this->pluginDefinition = $plugin_definition;

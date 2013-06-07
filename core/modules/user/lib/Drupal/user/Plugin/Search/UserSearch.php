@@ -86,13 +86,14 @@ class UserSearch extends SearchPluginBase implements ContainerFactoryPluginInter
     $user_storage = $entity_manger->getStorageController('user');
     $accounts = $user_storage->load($uids);
 
-    foreach ($accounts as $account) {
+    foreach ($accounts as $account_ng) {
+      $account = $account_ng->getBCEntity();
       $result = array(
         'title' => user_format_name($account),
-        'link' => url('user/' . $account->id(), array('absolute' => TRUE)),
+        'link' => url('user/' . $account->uid, array('absolute' => TRUE)),
       );
       if (user_access('administer users')) {
-        $result['title'] .= ' (' . $account->mail->value . ')';
+        $result['title'] .= ' (' . $account->mail . ')';
       }
       $results[] = $result;
     }
