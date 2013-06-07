@@ -5,7 +5,7 @@
  */
 namespace Drupal\search\Plugin;
 
-use Drupal\Component\Plugin\ContainerFactoryPluginBase;
+use Drupal\Core\Plugin\ContainerFactoryPluginBase;
 
 /**
  * Base class for plugins wishing to support search.
