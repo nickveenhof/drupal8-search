@@ -229,7 +229,7 @@ class FileFieldWidgetTest extends FileFieldTestBase {
     $this->assertFieldByXpath('//input[@id="edit-field-settings-uri-scheme-public" and @disabled="disabled"]', 'public', t('Upload destination setting disabled.'));
 
     // Delete node and confirm that setting could be changed.
-    node_delete($nid);
+    $node->delete();
     $this->drupalGet("admin/structure/types/manage/$type_name/fields/$instance->id/field");
     $this->assertFieldByXpath('//input[@id="edit-field-settings-uri-scheme-public" and not(@disabled)]', 'public', t('Upload destination setting enabled.'));
   }
@@ -241,7 +241,7 @@ class FileFieldWidgetTest extends FileFieldTestBase {
     $user = $this->drupalCreateUser(array('access comments'));
 
     // Grant the admin user required comment permissions.
-    user_role_grant_permissions(key($this->admin_user->roles), array('administer comment fields'));
+    user_role_grant_permissions($this->admin_user->roles[1], array('administer comment fields'));
 
     // Revoke access comments permission from anon user, grant post to
     // authenticated.

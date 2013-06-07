@@ -52,7 +52,8 @@ class CommentLinksTest extends CommentTestBase {
 
     // Remove additional user permissions from $this->web_user added by setUp(),
     // since this test is limited to anonymous and authenticated roles only.
-    entity_delete_multiple('user_role', array(key($this->web_user->roles)));
+    $roles = $this->web_user->roles;
+    entity_delete_multiple('user_role', array(reset($roles)));
 
     // Matrix of possible environmental conditions and configuration settings.
     // See setEnvironment() for details.
@@ -170,7 +171,7 @@ class CommentLinksTest extends CommentTestBase {
     variable_set('comment_anonymous_' . $this->node->type, $info['contact']);
     if ($this->node->comment != $info['comments']) {
       $this->node->comment = $info['comments'];
-      node_save($this->node);
+      $this->node->save();
     }
 
     // Change user settings.

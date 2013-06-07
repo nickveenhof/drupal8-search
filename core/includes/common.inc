@@ -8,11 +8,15 @@ use Drupal\Core\Cache\Cache;
 use Drupal\Core\Language\Language;
 use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\Yaml\Parser;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Request;
 use Drupal\Component\PhpStorage\PhpStorageFactory;
+use Drupal\Component\Utility\MapArray;
 use Drupal\Component\Utility\NestedArray;
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Datetime\DrupalDateTime;
 use Drupal\Core\Database\Database;
+use Drupal\Core\Routing\GeneratorNotInitializedException;
 use Drupal\Core\SystemListingInfo;
 use Drupal\Core\Template\Attribute;
 
@@ -498,42 +502,14 @@ function drupal_get_query_array($query) {
 /**
  * Parses an array into a valid, rawurlencoded query string.
  *
- * This differs from http_build_query() as we need to rawurlencode() (instead of
- * urlencode()) all query parameters.
- *
- * @param $query
- *   The query parameter array to be processed, e.g. $_GET.
- * @param $parent
- *   Internal use only. Used to build the $query array key for nested items.
- *
- * @return
- *   A rawurlencoded string which can be used as or appended to the URL query
- *   string.
- *
+ * @see \Drupal\Core\Routing\PathBasedGeneratorInterface::httpBuildQuery()
  * @see drupal_get_query_parameters()
+ * @deprecated as of Drupal 8.0. Use
+ *   Drupal::urlGenerator()->httpBuildQuery() instead.
  * @ingroup php_wrappers
  */
 function drupal_http_build_query(array $query, $parent = '') {
-  $params = array();
-
-  foreach ($query as $key => $value) {
-    $key = ($parent ? $parent . '[' . rawurlencode($key) . ']' : rawurlencode($key));
-
-    // Recurse into children.
-    if (is_array($value)) {
-      $params[] = drupal_http_build_query($value, $key);
-    }
-    // If a query parameter value is NULL, only append its key.
-    elseif (!isset($value)) {
-      $params[] = $key;
-    }
-    else {
-      // For better readability of paths in query strings, we decode slashes.
-      $params[] = $key . '=' . str_replace('%2F', '/', rawurlencode($value));
-    }
-  }
-
-  return implode('&', $params);
+  return Drupal::urlGenerator()->httpBuildQuery($query, $parent);
 }
 
 /**
@@ -564,7 +540,7 @@ function drupal_get_destination() {
   }
   else {
     $path = current_path();
-    $query = drupal_http_build_query(drupal_get_query_parameters());
+    $query = Drupal::urlGenerator()->httpBuildQuery(drupal_get_query_parameters());
     if ($query != '') {
       $path .= '?' . $query;
     }
@@ -725,8 +701,7 @@ function drupal_goto($path = '', array $options = array(), $http_response_code =
   // The 'Location' HTTP header must be absolute.
   $options['absolute'] = TRUE;
 
-  $url = url($path, $options);
-
+  $url = Drupal::urlGenerator()->generateFromPath($path, $options);
   header('Location: ' . $url, TRUE, $http_response_code);
 
   // The "Location" header sends a redirect status code to the HTTP daemon. In
@@ -1423,153 +1398,24 @@ function datetime_default_format_type() {
  * When creating links in modules, consider whether l() could be a better
  * alternative than url().
  *
- * @param $path
- *   (optional) The internal path or external URL being linked to, such as
- *   "node/34" or "http://example.com/foo". The default value is equivalent to
- *   passing in '<front>'. A few notes:
- *   - If you provide a full URL, it will be considered an external URL.
- *   - If you provide only the path (e.g. "node/34"), it will be
- *     considered an internal link. In this case, it should be a system URL,
- *     and it will be replaced with the alias, if one exists. Additional query
- *     arguments for internal paths must be supplied in $options['query'], not
- *     included in $path.
- *   - If you provide an internal path and $options['alias'] is set to TRUE, the
- *     path is assumed already to be the correct path alias, and the alias is
- *     not looked up.
- *   - The special string '<front>' generates a link to the site's base URL.
- *   - If your external URL contains a query (e.g. http://example.com/foo?a=b),
- *     then you can either URL encode the query keys and values yourself and
- *     include them in $path, or use $options['query'] to let this function
- *     URL encode them.
- * @param $options
- *   (optional) An associative array of additional options, with the following
- *   elements:
- *   - 'query': An array of query key/value-pairs (without any URL-encoding) to
- *     append to the URL.
- *   - 'fragment': A fragment identifier (named anchor) to append to the URL.
- *     Do not include the leading '#' character.
- *   - 'absolute': Defaults to FALSE. Whether to force the output to be an
- *     absolute link (beginning with http:). Useful for links that will be
- *     displayed outside the site, such as in an RSS feed.
- *   - 'alias': Defaults to FALSE. Whether the given path is a URL alias
- *     already.
- *   - 'external': Whether the given path is an external URL.
- *   - 'language': An optional language object. If the path being linked to is
- *     internal to the site, $options['language'] is used to look up the alias
- *     for the URL. If $options['language'] is omitted, the language will be
- *     obtained from language(Language::TYPE_URL).
- *   - 'https': Whether this URL should point to a secure location. If not
- *     defined, the current scheme is used, so the user stays on HTTP or HTTPS
- *     respectively. TRUE enforces HTTPS and FALSE enforces HTTP, but HTTPS can
- *     only be enforced when the variable 'https' is set to TRUE.
- *   - 'base_url': Only used internally, to modify the base URL when a language
- *     dependent URL requires so.
- *   - 'prefix': Only used internally, to modify the path when a language
- *     dependent URL requires so.
- *   - 'script': Added to the URL between the base path and the path prefix.
- *     Defaults to empty string when clean URLs are in effect, and to
- *     'index.php/' when they are not.
- *   - 'entity_type': The entity type of the object that called url(). Only
- *     set if url() is invoked by Drupal\Core\Entity\Entity::uri().
- *   - 'entity': The entity object (such as a node) for which the URL is being
- *     generated. Only set if url() is invoked by Drupal\Core\Entity\Entity::uri().
- *
- * @return
- *   A string containing a URL to the given path.
+ * @see \Drupal\Core\Routing\PathBasedGeneratorInterface::generateFromPath().
  */
 function url($path = NULL, array $options = array()) {
-  // Merge in defaults.
-  $options += array(
-    'fragment' => '',
-    'query' => array(),
-    'absolute' => FALSE,
-    'alias' => FALSE,
-    'prefix' => '',
-    'script' => $GLOBALS['script_path'],
-  );
-
-  if (!isset($options['external'])) {
-    // Return an external link if $path contains an allowed absolute URL. Only
-    // call the slow drupal_strip_dangerous_protocols() if $path contains a ':'
-    // before any / ? or #. Note: we could use url_is_external($path) here, but
-    // that would require another function call, and performance inside url() is
-    // critical.
-    $colonpos = strpos($path, ':');
-    $options['external'] = ($colonpos !== FALSE && !preg_match('![/?#]!', substr($path, 0, $colonpos)) && drupal_strip_dangerous_protocols($path) == $path);
+  $generator = Drupal::urlGenerator();
+  try {
+    $url = $generator->generateFromPath($path, $options);
   }
-
-  // Preserve the original path before altering or aliasing.
-  $original_path = $path;
-
-  // Allow other modules to alter the outbound URL and options.
-  drupal_alter('url_outbound', $path, $options, $original_path);
-
-  if (isset($options['fragment']) && $options['fragment'] !== '') {
-    $options['fragment'] = '#' . $options['fragment'];
+  catch (GeneratorNotInitializedException $e) {
+    // Fallback to using globals.
+    // @todo Remove this once there is no code that calls url() when there is
+    //   no request.
+    global $base_url, $base_path, $script_path;
+    $generator->setBasePath($base_path);
+    $generator->setBaseUrl($base_url . '/');
+    $generator->setScriptPath($script_path);
+    $url = $generator->generateFromPath($path, $options);
   }
-
-  if ($options['external']) {
-    // Split off the fragment.
-    if (strpos($path, '#') !== FALSE) {
-      list($path, $old_fragment) = explode('#', $path, 2);
-      // If $options contains no fragment, take it over from the path.
-      if (isset($old_fragment) && !$options['fragment']) {
-        $options['fragment'] = '#' . $old_fragment;
-      }
-    }
-    // Append the query.
-    if ($options['query']) {
-      $path .= (strpos($path, '?') !== FALSE ? '&' : '?') . drupal_http_build_query($options['query']);
-    }
-    if (isset($options['https']) && settings()->get('mixed_mode_sessions', FALSE)) {
-      if ($options['https'] === TRUE) {
-        $path = str_replace('http://', 'https://', $path);
-      }
-      elseif ($options['https'] === FALSE) {
-        $path = str_replace('https://', 'http://', $path);
-      }
-    }
-    // Reassemble.
-    return $path . $options['fragment'];
-  }
-
-  global $base_url, $base_secure_url, $base_insecure_url;
-
-  // The base_url might be rewritten from the language rewrite in domain mode.
-  if (!isset($options['base_url'])) {
-    if (isset($options['https']) && settings()->get('mixed_mode_sessions', FALSE)) {
-      if ($options['https'] === TRUE) {
-        $options['base_url'] = $base_secure_url;
-        $options['absolute'] = TRUE;
-      }
-      elseif ($options['https'] === FALSE) {
-        $options['base_url'] = $base_insecure_url;
-        $options['absolute'] = TRUE;
-      }
-    }
-    else {
-      $options['base_url'] = $base_url;
-    }
-  }
-
-  // The special path '<front>' links to the default front page.
-  if ($path == '<front>') {
-    $path = '';
-  }
-  elseif (!empty($path) && !$options['alias']) {
-    $langcode = isset($options['language']) && isset($options['language']->langcode) ? $options['language']->langcode : '';
-    $alias = drupal_container()->get('path.alias_manager')->getPathAlias($original_path, $langcode);
-    if ($alias != $original_path) {
-      $path = $alias;
-    }
-  }
-
-  $base = $options['absolute'] ? $options['base_url'] . '/' : base_path();
-  $prefix = empty($path) ? rtrim($options['prefix'], '/') : $options['prefix'];
-
-  $path = drupal_encode_path($prefix . $path);
-  $query = $options['query'] ? ('?' . drupal_http_build_query($options['query'])) : '';
-  return $base . $options['script'] . $path . $query . $options['fragment'];
+  return $url;
 }
 
 /**
@@ -1718,7 +1564,7 @@ function l($text, $path, array $options = array()) {
   }
 
   // Allow other modules to modify the structure of the link.
-  Drupal::service('module_handler')->alter('link', $variables);
+  Drupal::moduleHandler()->alter('link', $variables);
 
   // Move attributes out of options. url() doesn't need them.
   $attributes = new Attribute($variables['options']['attributes']);
@@ -1749,28 +1595,10 @@ function drupal_exit() {
 /**
  * Forms an associative array from a linear array.
  *
- * This function walks through the provided array and constructs an associative
- * array out of it. The keys of the resulting array will be the values of the
- * input array. The values will be the same as the keys unless a function is
- * specified, in which case the output of the function is used for the values
- * instead.
- *
- * @param $array
- *   A linear array.
- * @param $function
- *   A name of a function to apply to all values before output.
- *
- * @return
- *   An associative array.
+ * @see \Drupal\Component\Utility\MapArray::copyValuesToKeys()
  */
-function drupal_map_assoc($array, $function = NULL) {
-  // array_combine() fails with empty arrays:
-  // http://bugs.php.net/bug.php?id=34857.
-  $array = !empty($array) ? array_combine($array, $array) : array();
-  if (is_callable($function)) {
-    $array = array_map($function, $array);
-  }
-  return $array;
+function drupal_map_assoc($array, $callable = NULL) {
+  return MapArray::copyValuesToKeys($array, $callable);
 }
 
 /**
@@ -1888,7 +1716,7 @@ function drupal_add_html_head_link($attributes, $header = FALSE) {
  * all typical visitors and most pages of a site. It is critical that all
  * preprocessed files are added unconditionally on every page, even if the
  * files do not happen to be needed on a page. This is normally done by calling
- * drupal_add_css() in a hook_init() implementation.
+ * drupal_add_css() in a hook_page_build() implementation.
  *
  * Non-preprocessed files should only be added to the page when they are
  * actually needed.
@@ -1943,14 +1771,15 @@ function drupal_add_html_head_link($attributes, $header = FALSE) {
  *     enabled, this should be set to TRUE if the stylesheet is present on every
  *     page of the website for users for whom it is present at all. This
  *     defaults to FALSE. It is set to TRUE for stylesheets added via module and
- *     theme .info.yml files. Modules that add stylesheets within hook_init()
- *     implementations, or from other code that ensures that the stylesheet is
- *     added to all website pages, should also set this flag to TRUE. All
- *     stylesheets within the same group that have the 'every_page' flag set to
- *     TRUE and do not have 'preprocess' set to FALSE are aggregated together
- *     into a single aggregate file, and that aggregate file can be reused
- *     across a user's entire site visit, leading to faster navigation between
- *     pages. However, stylesheets that are only needed on pages less frequently
+ *     theme .info.yml files. Modules that add stylesheets within
+ *     hook_page_build() implementations, or from other code that ensures that
+ *     the stylesheet is added to all website pages, should also set this flag
+ *     to TRUE. All stylesheets within the same group that have the 'every_page'
+ *     flag set to TRUE and do not have 'preprocess' set to FALSE are aggregated
+ *     together into a single aggregate file, and that aggregate file can be
+ *     reused across a user's entire site visit, leading to faster navigation
+ *     between pages.
+ *     However, stylesheets that are only needed on pages less frequently
  *     visited, can be added by code that only runs for those particular pages,
  *     and that code should not set the 'every_page' flag. This minimizes the
  *     size of the aggregate file that the user needs to download when first
@@ -2566,7 +2395,7 @@ function drupal_pre_render_styles($elements) {
 function drupal_build_css_cache($css) {
   $data = '';
   $uri = '';
-  $map = state()->get('drupal_css_cache_files') ?: array();
+  $map = Drupal::state()->get('drupal_css_cache_files') ?: array();
   // Create a new array so that only the file names are used to create the hash.
   // This prevents new aggregates from being created unnecessarily.
   $css_data = array();
@@ -2585,16 +2414,8 @@ function drupal_build_css_cache($css) {
       if ($stylesheet['type'] == 'file') {
         $contents = drupal_load_stylesheet($stylesheet['data'], TRUE);
 
-        // Build the base URL of this CSS file: start with the full URL.
-        $css_base_url = file_create_url($stylesheet['data']);
-        // Move to the parent.
-        $css_base_url = substr($css_base_url, 0, strrpos($css_base_url, '/'));
-        // Simplify to a relative URL if the stylesheet URL starts with the
-        // base URL of the website.
-        if (substr($css_base_url, 0, strlen($GLOBALS['base_root'])) == $GLOBALS['base_root']) {
-          $css_base_url = substr($css_base_url, strlen($GLOBALS['base_root']));
-        }
-
+        // Get the parent directory of this file, relative to the Drupal root.
+        $css_base_url = substr($stylesheet['data'], 0, strrpos($stylesheet['data'], '/'));
         _drupal_build_css_path(NULL, $css_base_url . '/');
         // Anchor all paths in the CSS with its base URL, ignoring external and absolute paths.
         $data .= preg_replace_callback('/url\(\s*[\'"]?(?![a-z]+:|\/+)([^\'")]+)[\'"]?\s*\)/i', '_drupal_build_css_path', $contents);
@@ -2634,7 +2455,7 @@ function drupal_build_css_cache($css) {
     }
     // Save the updated map.
     $map[$key] = $uri;
-    state()->set('drupal_css_cache_files', $map);
+    Drupal::state()->set('drupal_css_cache_files', $map);
   }
   return $uri;
 }
@@ -2656,7 +2477,7 @@ function _drupal_build_css_path($matches, $base = NULL) {
     $last = $path;
     $path = preg_replace('`(^|/)(?!\.\./)([^/]+)/\.\./`', '$1', $path);
   }
-  return 'url(' . $path . ')';
+  return 'url(' . file_create_url($path) . ')';
 }
 
 /**
@@ -2799,7 +2620,7 @@ function _drupal_load_stylesheet($matches) {
  * Deletes old cached CSS files.
  */
 function drupal_clear_css_cache() {
-  state()->delete('drupal_css_cache_files');
+  Drupal::state()->delete('drupal_css_cache_files');
   file_scan_directory('public://css', '/.*/', array('callback' => 'drupal_delete_file_if_stale'));
 }
 
@@ -3044,7 +2865,7 @@ function drupal_region_class($region) {
  * all typical visitors and most pages of a site. It is critical that all
  * preprocessed files are added unconditionally on every page, even if the
  * files are not needed on a page. This is normally done by calling
- * drupal_add_js() in a hook_init() implementation.
+ * drupal_add_js() in a hook_page_build() implementation.
  *
  * Non-preprocessed files should only be added to the page when they are
  * actually needed.
@@ -3087,9 +2908,9 @@ function drupal_region_class($region) {
  *     page of the website for users for whom it is present at all. This
  *     defaults to FALSE. It is set to TRUE for JavaScript files that are added
  *     via module and theme .info.yml files. Modules that add JavaScript within
- *     hook_init() implementations, or from other code that ensures that the
- *     JavaScript is added to all website pages, should also set this flag to
- *     TRUE. All JavaScript files within the same group and that have the
+ *     hook_page_build() implementations, or from other code that ensures that
+ *     the JavaScript is added to all website pages, should also set this flag
+ *     to TRUE. All JavaScript files within the same group and that have the
  *     'every_page' flag set to TRUE and do not have 'preprocess' set to FALSE
  *     are aggregated together into a single aggregate file, and that aggregate
  *     file can be reused across a user's entire site visit, leading to faster
@@ -4174,7 +3995,7 @@ function drupal_add_tabledrag($table_id, $action, $relationship, $group, $subgro
 function drupal_build_js_cache($files) {
   $contents = '';
   $uri = '';
-  $map = state()->get('system.js_cache_files') ?: array();
+  $map = Drupal::state()->get('system.js_cache_files') ?: array();
   // Create a new array so that only the file names are used to create the hash.
   // This prevents new aggregates from being created unnecessarily.
   $js_data = array();
@@ -4219,7 +4040,7 @@ function drupal_build_js_cache($files) {
       }
     }
     $map[$key] = $uri;
-    state()->set('system.js_cache_files', $map);
+    Drupal::state()->set('system.js_cache_files', $map);
   }
   return $uri;
 }
@@ -4228,8 +4049,8 @@ function drupal_build_js_cache($files) {
  * Deletes old cached JavaScript files and variables.
  */
 function drupal_clear_js_cache() {
-  state()->delete('system.javascript_parsed');
-  state()->delete('system.js_cache_files');
+  Drupal::state()->delete('system.javascript_parsed');
+  Drupal::state()->delete('system.js_cache_files');
   file_scan_directory('public://js', '/.*/', array('callback' => 'drupal_delete_file_if_stale'));
 }
 
@@ -4263,9 +4084,9 @@ function drupal_json_decode($var) {
  *   The private key.
  */
 function drupal_get_private_key() {
-  if (!($key = state()->get('system.private_key'))) {
+  if (!($key = Drupal::state()->get('system.private_key'))) {
     $key = Crypt::randomStringHashed(55);
-    state()->set('system.private_key', $key);
+    Drupal::state()->set('system.private_key', $key);
   }
   return $key;
 }
@@ -4326,7 +4147,7 @@ function _drupal_bootstrap_code() {
   require_once __DIR__ . '/entity.inc';
 
   // Load all enabled modules
-  drupal_container()->get('module_handler')->loadAll();
+  Drupal::moduleHandler()->loadAll();
 
   // Make sure all stream wrappers are registered.
   file_get_stream_wrappers();
@@ -4373,16 +4194,8 @@ function _drupal_bootstrap_full($skip = FALSE) {
   // Let all modules take action before the menu system handles the request.
   // We do not want this while running update.php.
   if (!defined('MAINTENANCE_MODE') || MAINTENANCE_MODE != 'update') {
-    // Prior to invoking hook_init(), initialize the theme (potentially a custom
-    // one for this page), so that:
-    // - Modules with hook_init() implementations that call theme() or
-    //   theme_get_registry() don't initialize the incorrect theme.
-    // - The theme can have hook_*_alter() implementations affect page building
-    //   (e.g., hook_form_alter(), hook_node_view_alter(), hook_page_alter()),
-    //   ahead of when rendering starts.
     menu_set_custom_theme();
     drupal_theme_initialize();
-    module_invoke_all('init');
   }
 }
 
@@ -4404,15 +4217,15 @@ function _drupal_bootstrap_full($skip = FALSE) {
  *
  * @see drupal_page_header()
  */
-function drupal_page_set_cache($body) {
+function drupal_page_set_cache(Response $response, Request $request) {
   global $base_root;
 
   if (drupal_page_is_cacheable()) {
     $cache = (object) array(
-      'cid' => $base_root . request_uri(),
+      'cid' => $base_root . $request->getRequestUri(),
       'data' => array(
-        'path' => current_path(),
-        'body' => $body,
+        'path' => $request->attributes->get('system_path'),
+        'body' => $response->getContent(),
         'title' => drupal_get_title(),
         'headers' => array(),
       ),
@@ -4421,16 +4234,18 @@ function drupal_page_set_cache($body) {
       'created' => REQUEST_TIME,
     );
 
-    // Restore preferred header names based on the lower-case names returned
-    // by drupal_get_http_header().
-    $header_names = _drupal_set_preferred_header_name();
-    foreach (drupal_get_http_header() as $name_lower => $value) {
-      $cache->data['headers'][$header_names[$name_lower]] = $value;
-      if ($name_lower == 'expires') {
-        // Use the actual timestamp from an Expires header if available.
-        $date = new DrupalDateTime($value);
-        $cache->expire = $date->getTimestamp();
-      }
+    $cache->data['headers'] = $response->headers->all();
+
+    // Hack: exclude the x-drupal-cache header; it may make it in here because
+    // of awkwardness in how we defer sending it over in _drupal_page_get_cache.
+    if (isset($cache->data['headers']['x-drupal-cache'])) {
+      unset($cache->data['headers']['x-drupal-cache']);
+    }
+
+     // Use the actual timestamp from an Expires header, if available.
+    if ($date = $response->getExpires()) {
+      $date = new DrupalDateTime($date);
+      $cache->expire = $date->getTimestamp();
     }
 
     if ($cache->data['body']) {
@@ -4498,7 +4313,7 @@ function drupal_cron_run() {
     }
 
     // Record cron time.
-    state()->set('system.cron_last', REQUEST_TIME);
+    Drupal::state()->set('system.cron_last', REQUEST_TIME);
     watchdog('cron', 'Cron run completed.', array(), WATCHDOG_NOTICE);
 
     // Release cron lock.
@@ -5356,7 +5171,7 @@ function drupal_render_cid_parts($granularity = NULL) {
     // resource drag for sites with many users, so when a module is being
     // equivocal, we favor the less expensive 'PER_ROLE' pattern.
     if ($granularity & DRUPAL_CACHE_PER_ROLE) {
-      $cid_parts[] = 'r.' . implode(',', array_keys($user->roles));
+      $cid_parts[] = 'r.' . implode(',', $user->roles);
     }
     elseif ($granularity & DRUPAL_CACHE_PER_USER) {
       $cid_parts[] = "u.$user->uid";
@@ -5654,9 +5469,9 @@ function element_set_attributes(array &$element, array $map) {
  * Parses Drupal module and theme .info.yml files.
  *
  * Info files are NOT for placing arbitrary theme and module-specific settings.
- * Use variable_get() and variable_set() for that. Info files are formatted as
- * YAML. If the 'version' key is set to 'VERSION' in any info file, then the
- * value will be substituted with the current version of Drupal core.
+ * Use Config::get() and Config::set()->save() for that. Info files are
+ * formatted as YAML. If the 'version' key is set to 'VERSION' in any info file,
+ * then the value will be substituted with the current version of Drupal core.
  *
  * Information stored in a module .info.yml file:
  * - name: The real name of the module for display purposes.

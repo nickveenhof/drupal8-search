@@ -78,7 +78,7 @@ class TrackerTest extends WebTestBase {
     $this->assertLink(t('My recent content'), 0, 'User tab shows up on the global tracker page.');
 
     // Delete a node and ensure it no longer appears on the tracker.
-    node_delete($published->nid);
+    $published->delete();
     $this->drupalGet('tracker');
     $this->assertNoText($published->label(), 'Deleted node do not show up in the tracker listing.');
   }
@@ -222,7 +222,7 @@ class TrackerTest extends WebTestBase {
     $this->drupalPost('comment/reply/' . $nodes[3]->nid, $comment, t('Save'));
 
     // Start indexing backwards from node 3.
-    state()->set('tracker.index_nid', 3);
+    \Drupal::state()->set('tracker.index_nid', 3);
 
     // Clear the current tracker tables and rebuild them.
     db_delete('tracker_node')
@@ -271,7 +271,7 @@ class TrackerTest extends WebTestBase {
 
     // Unpublish the node and ensure that it's no longer displayed.
     $edit = array(
-      'operation' => 'unpublish',
+      'operation' => 'node_unpublish_action',
       'nodes[' . $node->nid . ']' => $node->nid,
     );
     $this->drupalPost('admin/content', $edit, t('Update'));

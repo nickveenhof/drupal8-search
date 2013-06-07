@@ -94,7 +94,7 @@ abstract class CachePluginBase extends PluginBase {
    * @param $type
    *   The cache type, either 'query', 'result' or 'output'.
    */
-  function cache_expire($type) { }
+  protected function cacheExpire($type) { }
 
    /**
     * Determine expiration time in the cache table of the cache type
@@ -105,7 +105,7 @@ abstract class CachePluginBase extends PluginBase {
     * @param $type
     *   The cache type, either 'query', 'result' or 'output'.
     */
-  function cache_set_expire($type) {
+  protected function cacheSetExpire($type) {
     return CacheBackendInterface::CACHE_PERMANENT;
   }
 
@@ -115,7 +115,7 @@ abstract class CachePluginBase extends PluginBase {
    *
    * A plugin should override this to provide specialized caching behavior.
    */
-  function cache_set($type) {
+  public function cacheSet($type) {
     switch ($type) {
       case 'query':
         // Not supported currently, but this is certainly where we'd put it.
@@ -126,12 +126,12 @@ abstract class CachePluginBase extends PluginBase {
           'total_rows' => isset($this->view->total_rows) ? $this->view->total_rows : 0,
           'current_page' => $this->view->getCurrentPage(),
         );
-        cache($this->table)->set($this->generateResultsKey(), $data, $this->cache_set_expire($type));
+        cache($this->table)->set($this->generateResultsKey(), $data, $this->cacheSetExpire($type));
         break;
       case 'output':
         $this->storage['output'] = $this->view->display_handler->output;
         $this->gather_headers();
-        cache($this->table)->set($this->generateOutputKey(), $this->storage, $this->cache_set_expire($type));
+        cache($this->table)->set($this->generateOutputKey(), $this->storage, $this->cacheSetExpire($type));
         break;
     }
   }
@@ -143,7 +143,7 @@ abstract class CachePluginBase extends PluginBase {
    * A plugin should override this to provide specialized caching behavior.
    */
   function cache_get($type) {
-    $cutoff = $this->cache_expire($type);
+    $cutoff = $this->cacheExpire($type);
     switch ($type) {
       case 'query':
         // Not supported currently, but this is certainly where we'd put it.
@@ -215,7 +215,7 @@ abstract class CachePluginBase extends PluginBase {
    *
    * @see drupal_add_html_head()
    */
-  function cache_start() {
+  public function cacheStart() {
     $this->storage['head'] = drupal_add_html_head();
   }
 
@@ -285,7 +285,7 @@ abstract class CachePluginBase extends PluginBase {
       }
       $key_data = array(
         'build_info' => $build_info,
-        'roles' => array_keys($user->roles),
+        'roles' => $user->roles,
         'super-user' => $user->uid == 1, // special caching for super user.
         'langcode' => language(Language::TYPE_INTERFACE)->langcode,
         'base_url' => $GLOBALS['base_url'],
@@ -313,7 +313,7 @@ abstract class CachePluginBase extends PluginBase {
     if (!isset($this->outputKey)) {
       $key_data = array(
         'result' => $this->view->result,
-        'roles' => array_keys($user->roles),
+        'roles' => $user->roles,
         'super-user' => $user->uid == 1, // special caching for super user.
         'theme' => $GLOBALS['theme'],
         'langcode' => language(Language::TYPE_INTERFACE)->langcode,

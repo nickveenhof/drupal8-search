@@ -91,7 +91,7 @@ function hook_entity_bundle_info_alter(&$bundles) {
 function hook_entity_bundle_create($entity_type, $bundle) {
   // When a new bundle is created, the menu needs to be rebuilt to add the
   // Field UI menu item tabs.
-  state()->set('menu_rebuild_needed', TRUE);
+  Drupal::state()->set('menu_rebuild_needed', TRUE);
 }
 
 /**
@@ -548,7 +548,7 @@ function hook_entity_field_info_alter(&$info, $entity_type) {
  *   \Drupal\Core\TypedData\AccessibleInterface::access() for possible values.
  * @param \Drupal\Core\Entity\Field\Type\Field $field
  *   The entity field object on which the operation is to be performed.
- * @param \Drupal\user\Plugin\Core\Entity\User $account
+ * @param \Drupal\user\UserInterface $account
  *   The user account to check.
  *
  * @return bool|NULL

@@ -8,7 +8,7 @@
 namespace Drupal\Core\Entity\Field\Type;
 
 use Drupal\Core\Entity\Field\FieldInterface;
-use Drupal\user\Plugin\Core\Entity\User;
+use Drupal\user\UserInterface;
 use Drupal\Core\TypedData\TypedDataInterface;
 use Drupal\Core\TypedData\ItemList;
 
@@ -145,7 +145,7 @@ class Field extends ItemList implements FieldInterface {
   /**
    * Implements \Drupal\Core\TypedData\AccessibleInterface::access().
    */
-  public function access($operation = 'view', User $account = NULL) {
+  public function access($operation = 'view', UserInterface $account = NULL) {
     global $user;
     if (!isset($account) && $user->uid) {
       $account = user_load($user->uid);
@@ -155,7 +155,7 @@ class Field extends ItemList implements FieldInterface {
     // Invoke hook and collect grants/denies for field access from other
     // modules. Our default access flag is masked under the ':default' key.
     $grants = array(':default' => $access);
-    $hook_implementations = drupal_container()->get('module_handler')->getImplementations('entity_field_access');
+    $hook_implementations = \Drupal::moduleHandler()->getImplementations('entity_field_access');
     foreach ($hook_implementations as $module) {
       $grants = array_merge($grants, array($module => module_invoke($module, 'entity_field_access', $operation, $this, $account)));
     }
@@ -190,8 +190,23 @@ class Field extends ItemList implements FieldInterface {
    * @return bool
    *   TRUE if access to this field is allowed per default, FALSE otherwise.
    */
-  public function defaultAccess($operation = 'view', User $account = NULL) {
+  public function defaultAccess($operation = 'view', UserInterface $account = NULL) {
     // Grant access per default.
     return TRUE;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getConstraints() {
+    // Constraints usually apply to the field item, but required does make
+    // sense on the field only. So we special-case it to apply to the field for
+    // now.
+    // @todo: Separate list and list item definitions to separate constraints.
+    $constraints = array();
+    if (!empty($this->definition['required'])) {
+      $constraints[] = \Drupal::typedData()->getValidationConstraintManager()->create('NotNull', array());
+    }
+    return $constraints;
   }
 }

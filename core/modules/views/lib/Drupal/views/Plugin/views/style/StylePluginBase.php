@@ -75,7 +75,7 @@ abstract class StylePluginBase extends PluginBase {
   /**
     * Stores the rendered field values, keyed by the row index and field name.
     *
-    * @see \Drupal\views\Plugin\views\style\StylePluginBase::render_fields()
+    * @see \Drupal\views\Plugin\views\style\StylePluginBase::renderFields()
     * @see \Drupal\views\Plugin\views\style\StylePluginBase::get_field()
     *
     * @var array|null
@@ -90,7 +90,7 @@ abstract class StylePluginBase extends PluginBase {
    *
    * @var string
    *
-   * @see StylePluginBase::render_grouping_sets()
+   * @see StylePluginBase::renderGroupingSets()
    */
   protected $groupingTheme = 'views_view_grouping';
 
@@ -224,7 +224,7 @@ abstract class StylePluginBase extends PluginBase {
   /**
    * Should the output of the style plugin be rendered even if it's a empty view.
    */
-  function even_empty() {
+  public function evenEmpty() {
     return !empty($this->definition['even empty']);
   }
 
@@ -438,7 +438,7 @@ abstract class StylePluginBase extends PluginBase {
       TRUE
     );
 
-    return $this->render_grouping_sets($sets);
+    return $this->renderGroupingSets($sets);
   }
 
   /**
@@ -455,7 +455,7 @@ abstract class StylePluginBase extends PluginBase {
    * @return string
    *   Rendered output of given grouping sets.
    */
-  function render_grouping_sets($sets, $level = 0) {
+  public function renderGroupingSets($sets, $level = 0) {
     $output = array();
     $theme_functions = views_theme_functions($this->groupingTheme, $this->view, $this->view->display_handler->display);
     foreach ($sets as $set) {
@@ -540,7 +540,7 @@ abstract class StylePluginBase extends PluginBase {
     }
 
     // Make sure fields are rendered
-    $this->render_fields($this->view->result);
+    $this->renderFields($this->view->result);
     $sets = array();
     if ($groupings) {
       foreach ($records as $index => $row) {
@@ -619,7 +619,7 @@ abstract class StylePluginBase extends PluginBase {
    * @param array $result
    *   The result array from $view->result
    */
-  protected function render_fields(array $result) {
+  protected function renderFields(array $result) {
     if (!$this->usesFields()) {
       return;
     }
@@ -658,7 +658,7 @@ abstract class StylePluginBase extends PluginBase {
    */
   public function get_field($index, $field) {
     if (!isset($this->rendered_fields)) {
-      $this->render_fields($this->view->result);
+      $this->renderFields($this->view->result);
     }
 
     if (isset($this->rendered_fields[$index][$field])) {
@@ -676,7 +676,7 @@ abstract class StylePluginBase extends PluginBase {
   */
   protected function getFieldValue($index, $field) {
     $this->view->row_index = $index;
-    $value = $this->view->field[$field]->get_value($this->view->result[$index]);
+    $value = $this->view->field[$field]->getValue($this->view->result[$index]);
     unset($this->view->row_index);
     return $value;
   }

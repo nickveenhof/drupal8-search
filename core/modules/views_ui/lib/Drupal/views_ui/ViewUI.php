@@ -14,7 +14,7 @@ use Drupal\Core\TypedData\TypedDataInterface;
 use Drupal\views\Plugin\views\query\Sql;
 use Drupal\views\Plugin\Core\Entity\View;
 use Drupal\views\ViewStorageInterface;
-use Drupal\user\Plugin\Core\Entity\User;
+use Drupal\user\UserInterface;
 
 /**
  * Stores UI related temporary settings.
@@ -534,6 +534,7 @@ class ViewUI implements ViewStorageInterface {
     $output = '';
 
     $errors = $this->executable->validate();
+    $this->executable->destroy();
     if (empty($errors)) {
       $this->ajax = TRUE;
       $this->executable->live_preview = TRUE;
@@ -942,7 +943,7 @@ class ViewUI implements ViewStorageInterface {
   /**
    * Implements \Drupal\Core\TypedData\AccessibleInterface::access().
    */
-  public function access($operation = 'view', User $account = NULL) {
+  public function access($operation = 'view', UserInterface $account = NULL) {
     return $this->storage->access($operation, $account);
   }
 

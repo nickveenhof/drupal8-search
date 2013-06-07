@@ -410,6 +410,8 @@ function install_begin_request(&$install_state) {
     // Register Twig template engine for use during install.
     CoreBundle::registerTwig($container);
 
+    $container->register('url_generator', 'Drupal\Core\Routing\NullGenerator');
+
     Drupal::setContainer($container);
   }
 
@@ -418,7 +420,7 @@ function install_begin_request(&$install_state) {
 
   require_once __DIR__ . '/ajax.inc';
 
-  $module_handler = drupal_container()->get('module_handler');
+  $module_handler = Drupal::moduleHandler();
   if (!$module_handler->moduleExists('system')) {
     // Override the module list with a minimal set of modules.
     $module_handler->setModuleList(array('system' => 'core/modules/system/system.module'));
@@ -961,7 +963,7 @@ function install_base_system(&$install_state) {
   // after all the dependencies have been installed.
   $modules[] = drupal_get_profile();
 
-  state()->set('install_profile_modules', array_diff($modules, array('system')));
+  Drupal::state()->set('install_profile_modules', array_diff($modules, array('system')));
   $install_state['database_tables_exist'] = TRUE;
 }
 
@@ -1719,9 +1721,9 @@ function install_bootstrap_full() {
  *   The batch definition.
  */
 function install_profile_modules(&$install_state) {
-  $modules = state()->get('install_profile_modules') ?: array();
+  $modules = Drupal::state()->get('install_profile_modules') ?: array();
   $files = system_rebuild_module_data();
-  state()->delete('install_profile_modules');
+  Drupal::state()->delete('install_profile_modules');
 
   // Always install required modules first. Respect the dependencies between
   // the modules.
@@ -1948,7 +1950,14 @@ function install_finished(&$install_state) {
 
   $messages = drupal_set_message();
   $output = '<p>' . st('Congratulations, you installed @drupal!', array('@drupal' => drupal_install_profile_distribution_name())) . '</p>';
-  $output .= '<p>' . (isset($messages['error']) ? st('Review the messages above before visiting <a href="@url">your new site</a>.', array('@url' => url(''))) : st('<a href="@url">Visit your new site</a>.', array('@url' => url('')))) . '</p>';
+  // Ensure the URL that is generated for the home page does not have 'install.php'
+  // in it.
+  $request = Request::createFromGlobals();
+  $generator = Drupal::urlGenerator();
+  $generator->setBasePath(str_replace('/core', '', $request->getBasePath()) . '/');
+  $generator->setScriptPath('');
+  $url = $generator->generateFromPath('');
+  $output .= '<p>' . (isset($messages['error']) ? st('Review the messages above before visiting <a href="@url">your new site</a>.', array('@url' => $url)) : st('<a href="@url">Visit your new site</a>.', array('@url' => $url))) . '</p>';
 
   // Run cron to populate update status tables (if available) so that users
   // will be warned if they've installed an out of date Drupal version.
