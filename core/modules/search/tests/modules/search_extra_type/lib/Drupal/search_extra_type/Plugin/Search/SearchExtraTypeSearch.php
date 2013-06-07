@@ -7,6 +7,7 @@
 
 namespace Drupal\search_extra_type\Plugin\Search;
 
+use Drupal\Core\Config\ConfigFactory;
 use Drupal\search\Plugin\SearchPluginBase;
 use Drupal\search\Annotation\SearchPlugin;
 
@@ -70,7 +71,7 @@ class SearchExtraTypeSearch extends SearchPluginBase {
         'link' => url('node'),
         'type' => 'Dummy result type',
         'title' => 'Dummy title',
-        'snippet' => "Dummy search snippet to display. Keywords: {$this->keywords}\n\nConditions: " . print_r($this->conditions, TRUE),
+        'snippet' => "Dummy search snippet to display. Keywords: {$this->keywords}\n\nConditions: " . print_r($this->searchParams['search_conditions'], TRUE),
       ),
     );
   }
