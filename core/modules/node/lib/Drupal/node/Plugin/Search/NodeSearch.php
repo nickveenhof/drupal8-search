@@ -162,7 +162,7 @@ class NodeSearch extends SearchPluginBase implements ContainerFactoryPluginInter
    * {@inheritdoc}
    */
   public function updateIndex() {
-    $limit = (int) $this->config_factory('search.settings')->get('index.cron_limit');
+    $limit = (int) $this->config_factory->get('search.settings')->get('index.cron_limit');
 
     $result = $this->database->queryRange("SELECT n.nid FROM {node} n LEFT JOIN {search_dataset} d ON d.type = 'node' AND d.sid = n.nid WHERE d.sid IS NULL OR d.reindex <> 0 ORDER BY d.reindex ASC, n.nid ASC", 0, $limit, array(), array('target' => 'slave'));
     $nids = $result->fetchCol();
