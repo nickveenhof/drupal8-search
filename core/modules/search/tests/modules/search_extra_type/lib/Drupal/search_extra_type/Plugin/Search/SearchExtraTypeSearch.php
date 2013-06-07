@@ -43,6 +43,16 @@ class SearchExtraTypeSearch extends SearchPluginBase {
   }
 
   /**
+   * {@inheritdoc}
+   */
+  public function setSearch($keywords, array $params, array $attributes) {
+    if (empty($params['search_conditions'])) {
+      $params['search_conditions'] = '';
+    }
+    parent::setSearch($keywords, $params, $attributes);
+  }
+
+  /**
    * Verifies if the given parameters are valid enough to execute a search for.
    *
    * @return boolean
