@@ -8,7 +8,7 @@
 namespace Drupal\search\Annotation;
 
 /**
- * Defines an SearchPagePlugin type annotation object.
+ * Defines a SearchPlugin type annotation object.
  *
  * @Annotation
  */
