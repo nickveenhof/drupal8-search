@@ -3,10 +3,9 @@
  * @file
  * Definition of Drupal\search\Plugin\SearchPluginBase
  */
+namespace Drupal\search\Plugin;
 
 use Drupal\Component\Plugin\PluginBase;
-
-namespace Drupal\search\Plugin;
 
 /**
  * Base class for plugins wishing to support search.
@@ -33,22 +32,6 @@ abstract class SearchPluginBase extends PluginBase implements SearchInterface {
    * @var array
    */
   protected $searchAttributes;
-
-  /**
-   * Called by the ContainerFactory in the plugin manager to create an instance.
-   * 
-   * @param \Drupal\search\Plugin\ContainerInterface $container
-   * @param array $configuration
-   * @param type $plugin_id
-   * @param array $plugin_definition
-   * @return new instance of the plugin
-   */
-  static public function create(ContainerInterface $container, array $configuration, $plugin_id, array $plugin_definition) {
-    // Default implemntation doesn't use any dependencies from the container,
-    // but most plugins will want a database connection, entity manager,
-    // or other dependencies.
-    return new static($configuration, $plugin_id, $plugin_definition);
-  }
 
   /**
    * {@inheritdoc}

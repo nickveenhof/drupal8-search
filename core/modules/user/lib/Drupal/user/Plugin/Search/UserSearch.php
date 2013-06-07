@@ -11,6 +11,7 @@ namespace Drupal\user\Plugin\Search;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Entity\EntityManager;
 use Drupal\Core\Extension\ModuleHandlerInterface;
+use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\search\Plugin\SearchPluginBase;
 use Drupal\search\Annotation\SearchPlugin;
 
@@ -26,7 +27,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *   module = "user"
  * )
  */
-class UserSearch extends SearchPluginBase {
+class UserSearch extends SearchPluginBase implements ContainerFactoryPluginInterface {
   protected $database;
   protected $entity_manager;
   protected $module_handler;
