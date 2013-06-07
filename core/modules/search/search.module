@@ -239,17 +239,13 @@ function search_is_active() {
  *   'module' will be added (set to the module name).
  */
 function search_get_info($all = FALSE) {
-  $search_info = &drupal_static(__FUNCTION__);
-
-  if (!isset($search_info)) {
-    $search_info = array();
-    $search_definitions = Drupal::service('plugin.manager.search')->getDefinitions();
-    foreach ($search_definitions as $plugin_id => $plugin) {
-      $module = $plugin['module'];
-      $search_info[$module] = $plugin;
-      // Use module name as the default value.
-      $search_info[$module] += array('title' => $module, 'path' => $module, 'module' => $module);
-    }
+  $search_info = array();
+  $search_definitions = Drupal::service('plugin.manager.search')->getDefinitions();
+  foreach ($search_definitions as $plugin_id => $plugin) {
+    $module = $plugin['module'];
+    $search_info[$module] = $plugin;
+    // Use module name as the default value.
+    $search_info[$module] += array('title' => $module, 'path' => $module, 'module' => $module);
   }
 
   if ($all) {
