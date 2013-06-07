@@ -95,7 +95,7 @@ class SearchMultilingualEntityTest extends SearchTestBase {
     // Index only 4 items per cron run.
     config('search.settings')->set('index.cron_limit', 4)->save();
     // Update the index. This does the initial processing.
-    node_update_index();
+    \Drupal::service('plugin.manager.search')->createInstance('node_search')->updateIndex();
     // Run the shutdown function. Testing is a unique case where indexing
     // and searching has to happen in the same request, so running the shutdown
     // function manually is needed to finish the indexing process.
@@ -114,7 +114,7 @@ class SearchMultilingualEntityTest extends SearchTestBase {
   function testSearchingMultilingualFieldValues() {
     // Update the index and then run the shutdown method.
     // See testIndexingThrottle() for further explanation.
-    node_update_index();
+    \Drupal::service('plugin.manager.search')->createInstance('node_search')->updateIndex();
     search_update_totals();
     foreach ($this->searchable_nodes as $node) {
       // Each searchable node that we created contains values in the body field

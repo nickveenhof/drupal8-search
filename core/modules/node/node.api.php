@@ -121,7 +121,7 @@ use Drupal\Core\Entity\EntityInterface;
  *   - Resulting node is prepared for viewing (see Viewing a single node above)
  *   - comment_node_update_index() is called.
  *   - hook_node_search_result() (all)
- * - Search indexing (calling node_update_index()):
+ * - Search indexing (calling updateIndex() on the 'node_search' plugin):
  *   - Node is loaded (see Loading section above)
  *   - Node is prepared for viewing (see Viewing a single node above)
  *   - hook_node_update_index() (all)

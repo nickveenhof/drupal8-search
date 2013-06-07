@@ -32,6 +32,9 @@ class UserSearch extends SearchPluginBase implements ContainerFactoryPluginInter
   protected $entity_manager;
   protected $module_handler;
 
+  /**
+   * {@inheritdoc}
+   */
   static public function create(ContainerInterface $container, array $configuration, $plugin_id, array $plugin_definition) {
     $database = $container->get('database');
     $entity_manager = $container->get('plugin.manager.entity');

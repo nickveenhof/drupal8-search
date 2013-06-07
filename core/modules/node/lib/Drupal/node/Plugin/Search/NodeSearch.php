@@ -36,6 +36,9 @@ class NodeSearch extends SearchPluginBase implements ContainerFactoryPluginInter
   protected $config_factory;
   protected $state;
 
+  /**
+   * {@inheritdoc}
+   */
   static public function create(ContainerInterface $container, array $configuration, $plugin_id, array $plugin_definition) {
     $database = $container->get('database');
     $entity_manager = $container->get('plugin.manager.entity');
