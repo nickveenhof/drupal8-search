@@ -23,6 +23,23 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * )
  */
 class SearchExtraTypeSearch extends SearchPluginBase {
+  protected $config_factory;
+  protected $state;
+
+  /**
+   * {@inheritdoc}
+   */
+  static public function create(ContainerInterface $container, array $configuration, $plugin_id, array $plugin_definition) {
+    $config_factory = $container->get('config.factory');
+    return new static($config_factory, $configuration, $plugin_id, $plugin_definition);
+  }
+
+  public function __construct(ConfigFactory $config_factory, array $configuration, $plugin_id, array $plugin_definition) {
+    $this->configuration = $configuration;
+    $this->pluginId = $plugin_id;
+    $this->pluginDefinition = $plugin_definition;
+    $this->config_factory = $config_factory;
+  }
 
   /**
    * Verifies if the given parameters are valid enough to execute a search for.
@@ -56,5 +73,55 @@ class SearchExtraTypeSearch extends SearchPluginBase {
         'snippet' => "Dummy search snippet to display. Keywords: {$this->keywords}\n\nConditions: " . print_r($this->conditions, TRUE),
       ),
     );
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function buildResults() {
+    $results = $this->execute();
+    $output['prefix']['#markup'] = '<h2>Test page text is here</h2> <ol class="search-results">';
+
+    foreach ($results as $entry) {
+      $output[] = array(
+        '#theme' => 'search_result',
+        '#result' => $entry,
+        '#module' => 'search_extra_type',
+      );
+    }
+    $output['suffix']['#markup'] = '</ol>' . theme('pager');
+
+    return $output;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function addToAdminForm(array &$form, array &$form_state) {
+    // Output form for defining rank factor weights.
+    $form['extra_type_settings'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Extra type settings'),
+      '#tree' => TRUE,
+    );
+
+    $form['extra_type_settings']['boost'] = array(
+      '#type' => 'select',
+      '#title' => t('Boost method'),
+      '#options' => array(
+        'bi' => t('Bistromathic'),
+        'ii' => t('Infinite Improbability'),
+      ),
+      '#default_value' => $this->config_factory->get('search_extra_type.settings')->get('boost'),
+    );
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function submitAdminForm(array &$form, array &$form_state) {
+    $this->config_factory->get('search_extra_type.settings')
+      ->set('boost', $form_state['values']['extra_type_settings']['boost'])
+      ->save();
   }
 }

@@ -5,12 +5,12 @@
  */
 namespace Drupal\search\Plugin;
 
-use Drupal\Component\Plugin\PluginBase;
+use Drupal\Component\Plugin\ContainerFactoryPluginBase;
 
 /**
  * Base class for plugins wishing to support search.
  */
-abstract class SearchPluginBase extends PluginBase implements SearchInterface {
+abstract class SearchPluginBase extends ContainerFactoryPluginBase implements SearchInterface {
 
   /**
    * The keywords to use in a search.

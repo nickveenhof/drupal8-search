@@ -14,7 +14,6 @@ use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityManager;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\KeyValueStore\KeyValueStoreInterface;
-use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\search\Plugin\SearchPluginBase;
 use Drupal\search\Annotation\SearchPlugin;
 
@@ -30,7 +29,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *   module = "node"
  * )
  */
-class NodeSearch extends SearchPluginBase implements ContainerFactoryPluginInterface {
+class NodeSearch extends SearchPluginBase {
   protected $database;
   protected $entity_manager;
   protected $module_handler;
