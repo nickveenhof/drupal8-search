@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Contains \Drupal\aearch\Plugin\SearchInterface.
+ * Contains \Drupal\search\Plugin\SearchInterface.
  */
 
 namespace Drupal\search\Plugin;

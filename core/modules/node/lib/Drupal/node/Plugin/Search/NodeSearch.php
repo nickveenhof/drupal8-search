@@ -10,6 +10,7 @@ namespace Drupal\node\Plugin\Search;
 use Drupal\Core\Config\ConfigFactory;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Database\Query\SelectExtender;
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityManager;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\KeyValueStore\KeyValueStoreInterface;
@@ -101,8 +102,8 @@ class NodeSearch extends SearchPluginBase implements ContainerFactoryPluginInter
       ->limit(10)
       ->execute();
 
-    $node_storage = $this->entity_manger->getStorageController('node');
-    $node_render = $this->entity_manger->getRenderController('node');
+    $node_storage = $this->entity_manager->getStorageController('node');
+    $node_render = $this->entity_manager->getRenderController('node');
     $module_handler = $this->module_handler;
 
     foreach ($find as $item) {
