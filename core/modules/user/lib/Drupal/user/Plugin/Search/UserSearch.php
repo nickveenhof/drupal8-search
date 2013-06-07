@@ -31,7 +31,6 @@ class UserSearch extends SearchPluginBase implements ContainerFactoryPluginInter
   protected $database;
   protected $entity_manager;
   protected $module_handler;
-  protected $keywords;
 
   static public function create(ContainerInterface $container, array $configuration, $plugin_id, array $plugin_definition) {
     $database = $container->get('database');
@@ -47,7 +46,6 @@ class UserSearch extends SearchPluginBase implements ContainerFactoryPluginInter
     $this->database = $database;
     $this->entity_manager = $entity_manager;
     $this->module_handler = $module_handler;
-    $this->keywords = (string) $this->configuration['keywords'];
   }
 
   /**
@@ -91,10 +89,10 @@ class UserSearch extends SearchPluginBase implements ContainerFactoryPluginInter
     foreach ($accounts as $account) {
       $result = array(
         'title' => user_format_name($account),
-        'link' => url('user/' . $account->uid, array('absolute' => TRUE)),
+        'link' => url('user/' . $account->id(), array('absolute' => TRUE)),
       );
       if (user_access('administer users')) {
-        $result['title'] .= ' (' . $account->mail . ')';
+        $result['title'] .= ' (' . $account->mail->value . ')';
       }
       $results[] = $result;
     }
