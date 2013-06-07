@@ -148,7 +148,7 @@ function search_admin_settings_submit($form, &$form_state) {
   // Handle and per-plugin submission logic.
   foreach(search_get_info() as $module => $search_info) {
     $plugin = \Drupal::service('plugin.manager.search')->createInstance($search_info['id']);
-    $plugin->submitAdminFrom($form, $form_state);
+    $plugin->submitAdminForm($form, $form_state);
   }
   // Check whether we are resetting the values.
   if ($form_state['triggering_element']['#value'] == t('Reset to defaults')) {
