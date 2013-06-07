@@ -22,42 +22,6 @@ function hook_search_access() {
 }
 
 /**
- * Override the rendering of search results.
- *
- * A module that implements hook_search_info() to define a type of search may
- * implement this hook in order to override the default theming of its search
- * results, which is otherwise themed using theme('search_results').
- *
- * Note that by default, theme('search_results') and theme('search_result')
- * work together to create an ordered list (OL). So your hook_search_page()
- * implementation should probably do this as well.
- *
- * @param $results
- *   An array of search results.
- *
- * @return
- *   A renderable array, which will render the formatted search results with a
- *   pager included.
- *
- * @see search-result.tpl.php
- * @see search-results.tpl.php
- */
-function hook_search_page($results) {
-  $output['prefix']['#markup'] = '<ol class="search-results">';
-
-  foreach ($results as $entry) {
-    $output[] = array(
-      '#theme' => 'search_result',
-      '#result' => $entry,
-      '#module' => 'my_module_name',
-    );
-  }
-  $output['suffix']['#markup'] = '</ol>' . theme('pager');
-
-  return $output;
-}
-
-/**
  * Preprocess text for search.
  *
  * This hook is called to preprocess both the text added to the search index

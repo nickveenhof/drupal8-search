@@ -65,7 +65,7 @@ interface SearchInterface {
    * @return array $render
    *   The search results in a renderable array.
    */
-  public function buildResult();
+  public function buildResults();
 
   /**
    * Update the search index for this plugin.

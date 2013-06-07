@@ -91,7 +91,7 @@ abstract class SearchPluginBase extends PluginBase implements SearchInterface {
   /**
    * {@inheritdoc}
    */
-  public function buildResult() {
+  public function buildResults() {
     $results = $this->execute();
     return array(
       '#theme' => 'search_results',

@@ -33,8 +33,10 @@ function search_admin_settings($form, &$form_state) {
   // Collect some stats
   $remaining = 0;
   $total = 0;
-  foreach ($config->get('active_modules') as $module) {
-    if ($status = module_invoke($module, 'search_status')) {
+  $active_plugins = array();
+  foreach(search_get_info() as $module => $search_info) {
+    $active_plugins[$module] = \Drupal::service('plugin.manager.search')->createInstance($search_info['id']);
+    if ($status = $active_plugins[$module]->indexStatus()) {
       $remaining += $status['remaining'];
       $total += $status['total'];
     }
@@ -107,12 +109,9 @@ function search_admin_settings($form, &$form_state) {
   $form['#validate'][] = 'search_admin_settings_validate';
   $form['#submit'][] = 'search_admin_settings_submit';
 
-  // Per module settings
-  foreach ($config->get('active_modules') as $module) {
-    $added_form = module_invoke($module, 'search_admin');
-    if (is_array($added_form)) {
-      $form = NestedArray::mergeDeep($form, $added_form);
-    }
+  // Per module plugin settings
+  foreach($active_plugins as $plugin) {
+    $plugin->addToAdminForm($form, $form_state);
   }
 
   return system_config_form($form, $form_state);
@@ -146,7 +145,11 @@ function search_admin_settings_submit($form, &$form_state) {
   }
   $config->set('index.cron_limit', $form_state['values']['cron_limit']);
   $config->set('default_module', $form_state['values']['default_module']);
-
+  // Handle and per-plugin submission logic.
+  foreach(search_get_info() as $module => $search_info) {
+    $plugin = \Drupal::service('plugin.manager.search')->createInstance($search_info['id']);
+    $plugin->submitAdminFrom($form, $form_state);
+  }
   // Check whether we are resetting the values.
   if ($form_state['triggering_element']['#value'] == t('Reset to defaults')) {
     $new_modules = array('node', 'user');

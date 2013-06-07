@@ -90,17 +90,14 @@ class SearchRankingTest extends SearchTestBase {
     for ($i = 0; $i < 5; $i ++) {
       $client->post($stats_path, array(), array('nid' => $nid))->send();
     }
-
+    $plugin = \Drupal::service('plugin.manager.search')->createInstance('node_search');
+    $plugin->setSearch('rocks', array(), array());
     // Test each of the possible rankings.
     foreach ($node_ranks as $node_rank) {
       // Disable all relevancy rankings except the one we are testing.
       foreach ($node_ranks as $var) {
         variable_set('node_rank_' . $var, $var == $node_rank ? 10 : 0);
       }
-      $config = array(
-        'keywords' => 'rocks',
-      );
-      $plugin = \Drupal::service('plugin.manager.search.execute')->createInstance('node_search_execute', $config);
       // Do the search and assert the results.
       $set = $plugin->execute();
       $this->assertEqual($set[0]['node']->nid, $nodes[$node_rank][1]->nid, 'Search ranking "' . $node_rank . '" order.');
@@ -157,10 +154,8 @@ class SearchRankingTest extends SearchTestBase {
     foreach ($node_ranks as $node_rank) {
       variable_set('node_rank_' . $node_rank, 0);
     }
-    $config = array(
-      'keywords' => 'rocks',
-    );
-    $plugin = \Drupal::service('plugin.manager.search.execute')->createInstance('node_search_execute', $config);
+    $plugin = \Drupal::service('plugin.manager.search')->createInstance('node_search');
+    $plugin->setSearch('rocks', array(), array());
     // Do the search and assert the results.
     $set = $plugin->execute();
 
@@ -186,10 +181,8 @@ class SearchRankingTest extends SearchTestBase {
 
       // Refresh variables after the treatment.
       $this->refreshVariables();
-      $config = array(
-        'keywords' => 'rocks',
-      );
-      $plugin = \Drupal::service('plugin.manager.search.execute')->createInstance('node_search_execute', $config);
+      $plugin = \Drupal::service('plugin.manager.search')->createInstance('node_search');
+      $plugin->setSearch('rocks', array(), array());
       // Do the search and assert the results.
       $set = $plugin->execute();
 
@@ -239,10 +232,8 @@ class SearchRankingTest extends SearchTestBase {
     }
 
     // Do the search and assert the results.
-    $config = array(
-      'keywords' => 'rocks',
-    );
-    $plugin = \Drupal::service('plugin.manager.search.execute')->createInstance('node_search_execute', $config);
+    $plugin = \Drupal::service('plugin.manager.search')->createInstance('node_search');
+    $plugin->setSearch('rocks', array(), array());
     // Do the search and assert the results.
     $set = $plugin->execute();
     $this->assertEqual($set[0]['node']->nid, $node->nid, 'Search double ranking order.');
