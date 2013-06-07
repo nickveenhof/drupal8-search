@@ -173,7 +173,7 @@ class NodeSearch extends SearchPluginBase implements ContainerFactoryPluginInter
     // The indexing throttle should be aware of the number of language variants
     // of a node.
     $counter = 0;
-    $node_storage = $this->entity_manger->getStorageController('node');
+    $node_storage = $this->entity_manager->getStorageController('node');
     foreach ($node_storage->load($nids) as $node) {
       // Determine when the maximum number of indexable items is reached.
       $counter += count($node->getTranslationLanguages());
