@@ -63,7 +63,7 @@ class SearchRankingTest extends SearchTestBase {
     }
 
     // Update the search index.
-    module_invoke_all('update_index');
+    $this->container->get('plugin.manager.search')->createInstance('node_search')->updateIndex();
     search_update_totals();
 
     // Refresh variables after the treatment.
@@ -143,7 +143,7 @@ class SearchRankingTest extends SearchTestBase {
     }
 
     // Update the search index.
-    module_invoke_all('update_index');
+    $this->container->get('plugin.manager.search')->createInstance('node_search')->updateIndex();
     search_update_totals();
 
     // Refresh variables after the treatment.
@@ -176,7 +176,7 @@ class SearchRankingTest extends SearchTestBase {
       $node = $this->drupalCreateNode($settings);
 
       // Update the search index.
-      module_invoke_all('update_index');
+      $this->container->get('plugin.manager.search')->createInstance('node_search')->updateIndex();
       search_update_totals();
 
       // Refresh variables after the treatment.
@@ -217,7 +217,7 @@ class SearchRankingTest extends SearchTestBase {
     $node = $this->drupalCreateNode($settings);
 
     // Update the search index.
-    module_invoke_all('update_index');
+    $this->container->get('plugin.manager.search')->createInstance('node_search')->updateIndex();
     search_update_totals();
 
     // Refresh variables after the treatment.
