@@ -90,8 +90,6 @@ class SearchRankingTest extends SearchTestBase {
     for ($i = 0; $i < 5; $i ++) {
       $client->post($stats_path, array(), array('nid' => $nid))->send();
     }
-    $plugin = $this->container->get('plugin.manager.search')->createInstance('node_search');
-    $plugin->setSearch('rocks', array(), array());
     // Test each of the possible rankings.
     foreach ($node_ranks as $node_rank) {
       // Disable all relevancy rankings except the one we are testing.
@@ -99,6 +97,8 @@ class SearchRankingTest extends SearchTestBase {
         variable_set('node_rank_' . $var, $var == $node_rank ? 10 : 0);
       }
       // Do the search and assert the results.
+      $plugin = $this->container->get('plugin.manager.search')->createInstance('node_search');
+      $plugin->setSearch('rocks', array(), array());
       $set = $plugin->execute();
       $this->assertEqual($set[0]['node']->nid, $nodes[$node_rank][1]->nid, 'Search ranking "' . $node_rank . '" order.');
     }

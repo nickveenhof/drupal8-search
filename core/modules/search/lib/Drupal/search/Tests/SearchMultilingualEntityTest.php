@@ -95,7 +95,8 @@ class SearchMultilingualEntityTest extends SearchTestBase {
     // Index only 4 items per cron run.
     config('search.settings')->set('index.cron_limit', 4)->save();
     // Update the index. This does the initial processing.
-    $this->container->get('plugin.manager.search')->createInstance('node_search')->updateIndex();
+    $plugin = $this->container->get('plugin.manager.search')->createInstance('node_search');
+    $plugin->updateIndex();
     // Run the shutdown function. Testing is a unique case where indexing
     // and searching has to happen in the same request, so running the shutdown
     // function manually is needed to finish the indexing process.
@@ -104,7 +105,7 @@ class SearchMultilingualEntityTest extends SearchTestBase {
     // the first has one, the second has two and the third has three language
     // variants. Indexing the third would exceed the throttle limit, so we
     // expect that only the first two will be indexed.
-    $status = module_invoke('node', 'search_status');
+    $status = $plugin->indexStatus();
     $this->assertEqual($status['remaining'], 1, 'Remaining items after updating the search index is 1.');
   }
 
