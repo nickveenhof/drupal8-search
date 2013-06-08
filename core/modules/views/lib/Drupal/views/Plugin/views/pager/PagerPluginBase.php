@@ -94,7 +94,7 @@ abstract class PagerPluginBase extends PluginBase {
   /**
    * Set the page offset, or how many items to skip.
    */
-  function set_offset($offset) {
+  public function setOffset($offset) {
     $this->options['offset'] = $offset;
   }
 
@@ -114,7 +114,7 @@ abstract class PagerPluginBase extends PluginBase {
    *   If provided, the page number will be set to this. If NOT provided,
    *   the page number will be set from the global page array.
    */
-  function set_current_page($number = NULL) {
+  public function setCurrentPage($number = NULL) {
     if (!is_numeric($number) || $number < 0) {
       $number = 0;
     }

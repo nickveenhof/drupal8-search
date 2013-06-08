@@ -290,7 +290,7 @@ class Sql extends QueryPluginBase {
    *   might have a relationship to an 'album' node, which might
    *   have a relationship to an 'artist' node.
    */
-  function add_relationship($alias, JoinPluginBase $join, $base, $link_point = NULL) {
+  public function addRelationship($alias, JoinPluginBase $join, $base, $link_point = NULL) {
     if (empty($link_point)) {
       $link_point = $this->view->storage->get('base_table');
     }
@@ -823,7 +823,7 @@ class Sql extends QueryPluginBase {
    * The $field, $value and $operator arguments can also be passed in with a
    * single DatabaseCondition object, like this:
    * @code
-   *   $this->query->add_where(
+   *   $this->query->addWhere(
    *     $this->options['group'],
    *     db_or()
    *       ->condition($field, $value, 'NOT IN')
@@ -834,7 +834,7 @@ class Sql extends QueryPluginBase {
    * @see Drupal\Core\Database\Query\ConditionInterface::condition()
    * @see Drupal\Core\Database\Query\Condition
    */
-  function add_where($group, $field, $value = NULL, $operator = NULL) {
+  public function addWhere($group, $field, $value = NULL, $operator = NULL) {
     // Ensure all variants of 0 are actually 0. Thus '', 0 and NULL are all
     // the default group.
     if (empty($group)) {
